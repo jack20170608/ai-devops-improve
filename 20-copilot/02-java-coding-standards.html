@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Vibe Coding 的 Java 代码设计规范</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --code-bg: #f4f4f4;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: var(--text-color);
+            background: #fff;
+        }
+
+        h1 { font-size: 2em; color: var(--primary-color); border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { font-size: 1.5em; color: var(--primary-color); margin-top: 40px; padding-left: 15px; border-left: 4px solid var(--accent-color); }
+        h3 { font-size: 1.2em; color: #555; margin-top: 25px; }
+
+        a { color: var(--accent-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .note { background: #e8f4fd; border-left: 4px solid var(--accent-color); padding: 15px 20px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+        .note strong { color: var(--accent-color); }
+
+        code { font-family: 'Fira Code', 'Consolas', monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.9em; color: #e74c3c; }
+
+        pre { background: #282c34; color: #abb2bf; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; color: #abb2bf; font-size: 0.85em; }
+
+        .comment { color: #5c6370; font-style: italic; }
+        .keyword { color: #c678dd; }
+        .function { color: #61afef; }
+        .string { color: #98c379; }
+        .number { color: #d19a66; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+        th { background: var(--bg-color); font-weight: 600; }
+        tr:nth-child(even) { background: #fafafa; }
+
+        ul, ol { margin: 15px 0; padding-left: 25px; }
+        li { margin: 8px 0; }
+
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 40px 0; }
+        blockquote { border-left: 4px solid #ddd; margin: 20px 0; padding: 10px 20px; color: #666; background: #fafafa; }
+
+        .summary-table { background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .summary-table table { margin: 0; }
+
+        footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; color: #888; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>AI Vibe Coding 的 Java 代码设计规范</h1>
+
+    <div class="note">
+        <strong>前置知识：</strong> <a href="01-project-structure.html">AI Vibe Coding 项目目录结构最佳实践</a>
+    </div>
+
+    <p>在 AI 辅助编程场景下，代码设计规范不仅影响代码质量，更直接影响 AI 理解代码、生成代码的效率。良好的代码设计规范让 AI 能够准把握代码意图，生成更准确、更安全的代码。</p>
+
+    <h2>核心原则：AI 友好的代码设计</h2>
+
+    <h3>1. 单一职责原则（SRP）</h3>
+
+    <p>每个类和方法应该只有一个职责。这对 AI 协作尤为重要：</p>
+
+    <pre><code><span class="comment">// 不推荐 - 职责过多，AI 难以理解</span>
+<span class="keyword">public class</span> <span class="function">UserManager</span> {
+    <span class="keyword">public</span> <span class="function">User</span> <span class="function">createUser</span>(<span class="keyword">Map</span>&lt;String, Object&gt; data) { ... }
+    <span class="keyword">public</span> <span class="keyword">void</span> <span class="function">sendEmail</span>(<span class="function">User</span> user) { ... }
+    <span class="keyword">public</span> <span class="keyword">void</span> <span class="function">generateReport</span>() { ... }
+    <span class="keyword">public</span> <span class="keyword">void</span> <span class="function">cacheUser</span>(<span class="function">User</span> user) { ... }
+}
+
+<span class="comment">// 推荐 - 单一职责，AI 容易理解</span>
+<span class="keyword">public class</span> <span class="function">UserService</span> { <span class="keyword">public</span> <span class="function">User</span> <span class="function">createUser</span>(...) { ... } }
+<span class="keyword">public class</span> <span class="function">EmailService</span> { <span class="keyword">public</span> <span class="keyword">void</span> <span class="function">sendEmail</span>(...) { ... } }
+<span class="keyword">public class</span> <span class="function">ReportGenerator</span> { <span class="keyword">public</span> <span class="keyword">void</span> <span class="function">generateReport</span>() { ... } }
+<span class="keyword">public class</span> <span class="function">UserCache</span> { <span class="keyword">public</span> <span class="keyword">void</span> <span class="function">cacheUser</span>(...) { ... } }</code></pre>
+
+    <h3>2. 明确的命名规范</h3>
+
+    <p>命名是 AI 理解代码的第一入口。遵循以下规范：</p>
+
+    <table>
+        <tr>
+            <th>类型</th>
+            <th>规范</th>
+            <th>示例</th>
+        </tr>
+        <tr>
+            <td>类名</td>
+            <td>PascalCase，名词</td>
+            <td><code>UserService</code>, <code>OrderController</code></td>
+        </tr>
+        <tr>
+            <td>方法名</td>
+            <td>camelCase，动词或动词短语</td>
+            <td><code>createUser</code>, <code>findById</code></td>
+        </tr>
+        <tr>
+            <td>变量名</td>
+            <td>camelCase，名词</td>
+            <td><code>userList</code>, <code>totalCount</code></td>
+        </tr>
+        <tr>
+            <td>常量</td>
+            <td>UPPER_SNAKE_CASE</td>
+            <td><code>MAX_RETRY_COUNT</code></td>
+        </tr>
+        <tr>
+            <td>布尔值</td>
+            <td>is/has/can/should 前缀</td>
+            <td><code>isActive</code>, <code>hasPermission</code></td>
+        </tr>
+    </table>
+
+    <h3>3. 方法长度控制</h3>
+
+    <p>方法应该简短（建议不超过 30 行），让 AI 能够完整理解整个方法逻辑：</p>
+
+    <pre><code><span class="comment">// 不推荐 - 方法过长</span>
+<span class="keyword">public</span> <span class="function">User</span> <span class="function">createUserAndSendEmail</span>(<span class="function">UserRequest</span> request) {
+    <span class="comment">// 验证参数</span>
+    <span class="keyword">if</span> (request == <span class="keyword">null</span>) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">IllegalArgumentException</span>(); }
+    <span class="keyword">if</span> (request.getName() == <span class="keyword">null</span>) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">IllegalArgumentException</span>(); }
+    <span class="comment">// 验证邮箱格式</span>
+    <span class="keyword">if</span> (!request.getEmail().contains(<span class="string">"@"</span>)) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">IllegalArgumentException</span>(); }
+    <span class="comment">// 创建用户</span>
+    <span class="function">User</span> user = <span class="keyword">new</span> <span class="function">User</span>();
+    user.setName(request.getName());
+    user.setEmail(request.getEmail());
+    user.setCreatedAt(<span class="keyword">new</span> <span class="function">Date</span>());
+    <span class="comment">// 保存到数据库</span>
+    userRepository.save(user);
+    <span class="comment">// 发送欢迎邮件</span>
+    emailService.sendWelcomeEmail(user);
+    <span class="comment">// 记录日志</span>
+    log.info(<span class="string">"User created: "</span> + user.getId());
+    <span class="comment">// 更新缓存</span>
+    cacheService.put(<span class="string">"user:"</span> + user.getId(), user);
+    <span class="keyword">return</span> user;
+}
+
+<span class="comment">// 推荐 - 方法职责单一</span>
+<span class="keyword">public</span> <span class="function">User</span> <span class="function">createUser</span>(<span class="function">UserRequest</span> request) {
+    <span class="function">validateRequest</span>(request);
+    <span class="function">User</span> user = <span class="function">buildUser</span>(request);
+    userRepository.save(user);
+    <span class="function">onUserCreated</span>(user);
+    <span class="keyword">return</span> user;
+}
+
+<span class="keyword">private void</span> <span class="function">validateRequest</span>(<span class="function">UserRequest</span> request) { ... }
+<span class="keyword">private</span> <span class="function">User</span> <span class="function">buildUser</span>(<span class="function">UserRequest</span> request) { ... }
+<span class="keyword">private void</span> <span class="function">onUserCreated</span>(<span class="function">User</span> user) { ... }</code></pre>
+
+    <h2>面向 AI 的代码规范</h2>
+
+    <h3>1. 显式类型声明</h3>
+
+    <p>避免使用 <code>var</code> 让 AI 能够快速推断变量类型：</p>
+
+    <pre><code><span class="comment">// 不推荐 - AI 需要额外推断类型</span>
+<span class="keyword">var</span> user = userService.findById(id);
+<span class="keyword">var</span> result = orderList.stream().map(...).collect(...);
+
+<span class="comment">// 推荐 - 类型明确</span>
+<span class="function">User</span> user = userService.findById(id);
+<span class="function">List</span>&lt;<span class="function">OrderDTO</span>&gt; result = orderList.stream()
+    .<span class="function">map</span>(<span class="function">OrderDTO</span>::<span class="function">from</span>)
+    .<span class="function">collect</span>(<span class="function">Collectors</span>.toList());</code></pre>
+
+    <h3>2. 异常处理规范</h3>
+
+    <p>明确声明受检异常，让 AI 清楚知道需要处理的异常：</p>
+
+    <pre><code><span class="comment">// 不推荐 - 隐藏异常信息</span>
+<span class="keyword">public</span> <span class="function">User</span> <span class="function">findById</span>(<span class="function">Long</span> id) {
+    <span class="keyword">try</span> {
+        <span class="keyword">return</span> userRepository.findById(id).<span class="function">orElse</span>(<span class="keyword">null</span>);
+    } <span class="keyword">catch</span> (<span class="function">Exception</span> e) {
+        <span class="keyword">return</span> <span class="keyword">null</span>;  <span class="comment">// 静默吞掉异常</span>
+    }
+}
+
+<span class="comment">// 推荐 - 明确异常处理</span>
+<span class="keyword">public</span> <span class="function">User</span> <span class="function">findById</span>(<span class="function">Long</span> id) <span class="keyword">throws</span> <span class="function">UserNotFoundException</span> {
+    <span class="keyword">return</span> userRepository.findById(id)
+        .<span class="function">orElseThrow</span>(() -> <span class="keyword">new</span> <span class="function">UserNotFoundException</span>(id));
+}</code></pre>
+
+    <h3>3. 链式调用与可读性</h3>
+
+    <p>在长链式调用中添加适当换行，提高可读性：</p>
+
+    <pre><code><span class="comment">// 不推荐 - 难以阅读</span>
+<span class="function">List</span>&lt;<span class="function">UserDTO</span>&gt; users = userRepository.findByStatus(<span class="string">"ACTIVE"</span>).stream().filter(u -&gt; u.getAge() &gt; 18).map(u -&gt; <span class="keyword">new</span> <span class="function">UserDTO</span>(u.getName(), u.getEmail())).collect(<span class="function">Collectors</span>.toList());
+
+<span class="comment">// 推荐 - 清晰可读</span>
+<span class="function">List</span>&lt;<span class="function">UserDTO</span>&gt; users = userRepository.findByStatus(<span class="string">"ACTIVE"</span>)
+    .stream()
+    .<span class="function">filter</span>(u -&gt; u.getAge() &gt; 18)
+    .<span class="function">map</span>(<span class="function">UserDTO</span>::<span class="function">from</span>)
+    .<span class="function">collect</span>(<span class="function">Collectors</span>.toList());</code></pre>
+
+    <h2>分层架构中的代码规范</h2>
+
+    <h3>Controller 层规范</h3>
+
+    <pre><code><span class="comment">// Controller 应该简洁，只负责请求分发</span>
+<span class="keyword">@RestController</span>
+<span class="keyword">@RequestMapping</span>(<span class="string">"/api/users"</span>)
+<span class="keyword">public class</span> <span class="function">UserController</span> {
+
+    <span class="keyword">private final</span> <span class="function">UserService</span> userService;
+
+    <span class="comment">// 构造函数注入（推荐）</span>
+    <span class="keyword">public</span> <span class="function">UserController</span>(<span class="function">UserService</span> userService) {
+        <span class="keyword">this</span>.userService = userService;
+    }
+
+    <span class="comment">// 单一职责：只处理 HTTP 相关逻辑</span>
+    <span class="keyword">@PostMapping</span>
+    <span class="keyword">public</span> <span class="function">ResponseEntity</span>&lt;<span class="function">UserResponse</span>&gt; <span class="function">createUser</span>(
+            <span class="keyword">@Valid</span> <span class="function">@RequestBody</span> <span class="function">CreateUserRequest</span> request) {
+        <span class="function">User</span> user = userService.<span class="function">createUser</span>(request);
+        <span class="keyword">return</span> <span class="function">ResponseEntity</span>.ok(<span class="function">UserResponse</span>.from(user));
+    }
+
+    <span class="keyword">@GetMapping</span>(<span class="string">"/{id}"</span>)
+    <span class="keyword">public</span> <span class="function">ResponseEntity</span>&lt;<span class="function">UserResponse</span>&gt; <span class="function">getUser</span>(<span class="function">@PathVariable</span> <span class="function">Long</span> id) {
+        <span class="function">User</span> user = userService.<span class="function">findById</span>(id);
+        <span class="keyword">return</span> <span class="function">ResponseEntity</span>.ok(<span class="function">UserResponse</span>.from(user));
+    }
+}</code></pre>
+
+    <h3>Service 层规范</h3>
+
+    <pre><code><span class="comment">// Service 层承载业务逻辑</span>
+<span class="keyword">@Service</span>
+<span class="keyword">public class</span> <span class="function">UserService</span> {
+
+    <span class="keyword">private final</span> <span class="function">UserRepository</span> userRepository;
+    <span class="keyword">private final</span> <span class="function">EmailService</span> emailService;
+    <span class="keyword">private final</span> <span class="function">CacheService</span> cacheService;
+
+    <span class="keyword">public</span> <span class="function">UserService</span>(
+            <span class="function">UserRepository</span> userRepository,
+            <span class="function">EmailService</span> emailService,
+            <span class="function">CacheService</span> cacheService) {
+        <span class="keyword">this</span>.userRepository = userRepository;
+        <span class="keyword">this</span>.emailService = emailService;
+        <span class="keyword">this</span>.cacheService = cacheService;
+    }
+
+    <span class="comment">// 业务方法应该清晰表达业务意图</span>
+    <span class="keyword">public</span> <span class="function">User</span> <span class="function">createUser</span>(<span class="function">CreateUserRequest</span> request) {
+        <span class="function">validateUniqueEmail</span>(request.getEmail());
+        <span class="function">User</span> user = <span class="function">buildUserEntity</span>(request);
+        <span class="function">User</span> saved = userRepository.save(user);
+        <span class="function">emailService</span>.<span class="function">sendWelcomeEmail</span>(saved);
+        <span class="keyword">return</span> saved;
+    }
+
+    <span class="keyword">private void</span> <span class="function">validateUniqueEmail</span>(<span class="function">String</span> email) {
+        <span class="keyword">if</span> (userRepository.existsByEmail(email)) {
+            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">BusinessException</span>(<span class="string">"Email already exists"</span>);
+        }
+    }
+
+    <span class="keyword">private</span> <span class="function">User</span> <span class="function">buildUserEntity</span>(<span class="function">CreateUserRequest</span> request) {
+        <span class="function">User</span> user = <span class="keyword">new</span> <span class="function">User</span>();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setStatus(<span class="function">UserStatus</span>.ACTIVE);
+        <span class="keyword">return</span> user;
+    }
+}</code></pre>
+
+    <h3>Repository 层规范</h3>
+
+    <pre><code><span class="comment">// Repository 层专注于数据访问</span>
+<span class="keyword">public interface</span> <span class="function">UserRepository</span> <span class="keyword">extends</span> <span class="function">JpaRepository</span>&lt;<span class="function">User</span>, <span class="function">Long</span>&gt; {
+
+    <span class="comment">// 清晰的方法命名，让 AI 理解查询意图</span>
+    <span class="function">Optional</span>&lt;<span class="function">User</span>&gt; <span class="function">findByEmail</span>(<span class="function">String</span> email);
+
+    <span class="function">List</span>&lt;<span class="function">User</span>&gt; <span class="function">findByStatus</span>(<span class="function">UserStatus</span> status);
+
+    <span class="function">List</span>&lt;<span class="function">User</span>&gt; <span class="function">findByCreatedAtBetween</span>(<span class="function">LocalDateTime</span> start, <span class="function">LocalDateTime</span> end);
+
+    <span class="comment">// 复杂查询使用 @Query</span>
+    <span class="annotation">@Query</span>(<span class="string">"SELECT u FROM User u WHERE u.status = :status AND u.age >= :minAge"</span>)
+    <span class="function">List</span>&lt;<span class="function">User</span>&gt; <span class="function">findActiveUsersByMinAge</span>(
+        <span class="annotation">@Param</span>(<span class="string">"status"</span>) <span class="function">UserStatus</span> status,
+        <span class="annotation">@Param</span>(<span class="string">"minAge"</span>) <span class="function">Integer</span> minAge);
+}</code></pre>
+
+    <h2>AI 辅助下的代码规范检查</h2>
+
+    <h3>1. 使用 Builder 模式</h3>
+
+    <p>Builder 模式让 AI 能够更清晰地构造对象：</p>
+
+    <pre><code><span class="comment">// 使用 Lombok @Builder</span>
+<span class="annotation">@Builder</span>
+<span class="keyword">public class</span> <span class="function">UserDTO</span> {
+    <span class="keyword">private final</span> <span class="function">Long</span> id;
+    <span class="keyword">private final</span> <span class="function">String</span> name;
+    <span class="keyword">private final</span> <span class="function">String</span> email;
+    <span class="keyword">private final</span> <span class="function">LocalDateTime</span> createdAt;
+}
+
+<span class="comment">// AI 容易理解如何构造</span>
+<span class="function">UserDTO</span> dto = <span class="function">UserDTO</span>.builder()
+    .id(1L)
+    .name(<span class="string">"John"</span>)
+    .email(<span class="string">"john@example.com"</span>)
+    .createdAt(<span class="function">LocalDateTime</span>.now())
+    .<span class="function">build</span>();</code></pre>
+
+    <h3>2. 使用 Lombok 减少样板代码</h3>
+
+    <p>减少样板代码让 AI 聚焦于业务逻辑：</p>
+
+    <pre><code><span class="comment">// 推荐 - 使用 Lombok 简化</span>
+<span class="annotation">@Data</span>
+<span class="annotation">@Builder</span>
+<span class="annotation">@NoArgsConstructor</span>
+<span class="annotation">@AllArgsConstructor</span>
+<span class="keyword">public class</span> <span class="function">User</span> {
+    <span class="keyword">private</span> <span class="function">Long</span> id;
+    <span class="keyword">private</span> <span class="function">String</span> name;
+    <span class="keyword">private</span> <span class="function">String</span> email;
+}
+
+<span class="comment">// 不推荐 - 大量样板代码分散 AI 注意力</span>
+<span class="keyword">public class</span> <span class="function">User</span> {
+    <span class="keyword">private</span> <span class="function">Long</span> id;
+    <span class="keyword">private</span> <span class="function">String</span> name;
+    <span class="keyword">private</span> <span class="function">String</span> email;
+
+    <span class="comment">// 30+ 行 getter/setter/equals/hashCode/toString</span>
+}</code></pre>
+
+    <h3>3. 使用 record（Java 16+）</h3>
+
+    <p>对于不可变数据对象，使用 record 简化代码：</p>
+
+    <pre><code><span class="comment">// 推荐 - 使用 record 定义 DTO</span>
+<span class="keyword">public record</span> <span class="function">UserResponse</span>(
+    <span class="function">Long</span> id,
+    <span class="function">String</span> name,
+    <span class="function">String</span> email
+) {}
+
+<span class="comment">// 传统方式需要更多代码</span>
+<span class="annotation">@Data</span>
+<span class="annotation">@Builder</span>
+<span class="keyword">public class</span> <span class="function">UserResponse</span> {
+    <span class="keyword">private</span> <span class="function">Long</span> id;
+    <span class="keyword">private</span> <span class="function">String</span> name;
+    <span class="keyword">private</span> <span class="function">String</span> email;
+}</code></pre>
+
+    <h2>总结</h2>
+
+    <div class="summary-table">
+        <table>
+            <tr>
+                <th>规范类别</th>
+                <th>最佳实践</th>
+                <th>AI 收益</th>
+            </tr>
+            <tr>
+                <td>单一职责</td>
+                <td>类和方法的职责应该单一</td>
+                <td>快速理解代码意图</td>
+            </tr>
+            <tr>
+                <td>命名规范</td>
+                <td>使用语义化的命名</td>
+                <td>准确推断类型和用途</td>
+            </tr>
+            <tr>
+                <td>方法长度</td>
+                <td>方法不超过 30 行</td>
+                <td>完整理解方法逻辑</td>
+            </tr>
+            <tr>
+                <td>类型声明</td>
+                <td>使用显式类型而非 var</td>
+                <td>直接获取类型信息</td>
+            </tr>
+            <tr>
+                <td>异常处理</td>
+                <td>明确声明和抛出异常</td>
+                <td>了解错误处理路径</td>
+            </tr>
+            <tr>
+                <td>代码简化</td>
+                <td>使用 Lombok、record</td>
+                <td>聚焦业务逻辑</td>
+            </tr>
+        </table>
+    </div>
+
+    <p>良好的代码设计规范是 AI vibe coding 的核心。遵循这些规范不仅能提高代码质量，更能让 AI 成为你真正的编程助手，显著提升开发效率。</p>
+
+    <hr>
+
+    <h2>参考资料</h2>
+    <ul>
+        <li><a href="https://spring.io/projects/spring-boot" target="_blank">Spring Boot Official Documentation</a></li>
+        <li><a href="https://www.oracle.com/java/technologies/javase/16-downloads.html" target="_blank">Java 16+ Features</a></li>
+    </ul>
+
+    <footer>
+        <p>&copy; 2024 AI Vibe Coding Series | <a href="../../index.html">返回首页</a></p>
+    </footer>
+</body>
+</html>

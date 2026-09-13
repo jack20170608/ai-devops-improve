@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Vibe Coding 系列文章</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: var(--text-color);
+            background: #fff;
+        }
+
+        h1 { font-size: 2em; color: var(--primary-color); border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { font-size: 1.5em; color: var(--primary-color); margin-top: 40px; padding-left: 15px; border-left: 4px solid var(--accent-color); }
+        h3 { font-size: 1.2em; color: #555; margin-top: 25px; }
+
+        a { color: var(--accent-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .card {
+            background: var(--bg-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .card h3 { margin-top: 0; }
+        .card .description { color: #666; }
+
+        .series-index {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+        }
+
+        .series-index h1 {
+            color: white;
+            border-bottom: none;
+            margin-bottom: 10px;
+        }
+
+        .series-index p {
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+        th { background: var(--bg-color); font-weight: 600; }
+
+        ul, ol { margin: 15px 0; padding-left: 25px; }
+        li { margin: 8px 0; }
+
+        footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; color: #888; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="series-index">
+        <h1>🤖 AI Vibe Coding 系列文章</h1>
+        <p>探索 AI 辅助编程的最佳实践，释放创造力，提升开发效率</p>
+    </div>
+
+    <h2>系列简介</h2>
+
+    <p>AI Vibe Coding（AI 氛围编程）是一种新兴的编程范式，开发者通过自然语言描述需求，AI 辅助生成代码。这种方式改变了传统的软件开发流程，让我们能够更专注于业务逻辑和创新，而非繁琐的代码细节。</p>
+
+    <p>本系列文章将从项目结构、代码设计规范、代码评审和测试三个维度，深入探讨 AI vibe coding 的最佳实践，帮助你成为 AI 时代的高效开发者。</p>
+
+    <h2>文章目录</h2>
+
+    <div class="card">
+        <h3>📁 01. AI Vibe Coding 项目目录结构最佳实践</h3>
+        <p class="description">介绍如何设计 AI 友好的项目目录结构，包括分层架构、模块划分、命名规范等核心要素。良好的目录结构是 AI 理解代码的基础。</p>
+        <p><strong>核心内容：</strong></p>
+        <ul>
+            <li>为什么目录结构对 AI 协作至关重要</li>
+            <li>推荐的 Java 项目目录结构</li>
+            <li>目录设计核心原则</li>
+            <li>AI 友好的目录结构特征</li>
+        </ul>
+        <p><a href="01-project-structure.html">阅读全文 →</a></p>
+    </div>
+
+    <div class="card">
+        <h3>📝 02. AI Vibe Coding 的 Java 代码设计规范</h3>
+        <p class="description">深入探讨 AI 辅助编程场景下的代码设计规范，包括单一职责、命名规范、方法长度控制等，让 AI 能够准确理解代码意图。</p>
+        <p><strong>核心内容：</strong></p>
+        <ul>
+            <li>AI 友好的代码设计核心原则</li>
+            <li>面向 AI 的代码规范</li>
+            <li>分层架构中的代码规范</li>
+            <li>AI 辅助下的代码规范检查</li>
+        </ul>
+        <p><a href="02-java-coding-standards.html">阅读全文 →</a></p>
+    </div>
+
+    <div class="card">
+        <h3>✅ 03. AI Vibe Coding 的代码评审和测试最佳实践</h3>
+        <p class="description">探讨 AI 时代代码评审和测试的新范式，包括评审流程、测试策略、边界条件覆盖等，确保 AI 生成的代码质量可控。</p>
+        <p><strong>核心内容：</strong></p>
+        <ul>
+            <li>AI Vibe Coding 中的代码评审变革</li>
+            <li>AI 辅助代码评审最佳实践</li>
+            <li>AI 辅助测试最佳实践</li>
+            <li>AI 与人类的协作闭环</li>
+        </ul>
+        <p><a href="03-code-review-testing.html">阅读全文 →</a></p>
+    </div>
+
+    <h2>学习路径</h2>
+
+    <table>
+        <tr>
+            <th>步骤</th>
+            <th>内容</th>
+            <th>预计阅读时间</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td><a href="01-project-structure.html">项目目录结构最佳实践</a></td>
+            <td>10 分钟</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><a href="02-java-coding-standards.html">Java 代码设计规范</a></td>
+            <td>15 分钟</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><a href="03-code-review-testing.html">代码评审和测试最佳实践</a></td>
+            <td>15 分钟</td>
+        </tr>
+    </table>
+
+    <h2>核心要点总结</h2>
+
+    <ul>
+        <li><strong>目录结构</strong>：清晰的分层架构和语义化命名是 AI 理解代码的基础</li>
+        <li><strong>代码规范</strong>：单一职责、显式类型、明确的异常处理让 AI 生成更高质量的代码</li>
+        <li><strong>评审测试</strong>：人类审查 + AI 辅助测试 = 高质量代码</li>
+    </ul>
+
+    <footer>
+        <p>&copy; 2024 AI Vibe Coding Series | <a href="../../index.html">返回首页</a></p>
+    </footer>
+</body>
+</html>
