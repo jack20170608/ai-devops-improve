@@ -46,7 +46,7 @@
 
 ### 06. AI 软件开发核心概念与 DevOps 实践
 
-用通俗类比、流程图和真实故障修复案例理解 Prompt、斜杠命令、Instructions、Skill、MCP、Agent 与 Subagent，并学习安全护栏和评估方法。
+用通俗类比、流程图和真实故障修复案例理解 Prompt、斜杠命令、Instructions、SOP、Skill、MCP、Agent 与 Subagent，并学习安全护栏和评估方法。
 
 - 难度：入门
 - 标签：AI 软件开发、Agent、MCP、DevOps
@@ -83,8 +83,8 @@
 
 6. **第六步：AI 软件开发与 DevOps 实践**
    - 文档：[06-ai-software-development-concepts.md](./06-ai-software-development-concepts.md)
-   - 预计时间：45 分钟
-   - 目标：理解 AI 开发工具的分工，并能设计受控、可验证的 Agent 工作流
+   - 预计时间：55 分钟
+   - 目标：理解 AI 开发工具的分工，并能把团队 SOP 转化为受控、可验证的 Agent 工作流
 
 ## 🎯 学习目标
 
@@ -95,7 +95,7 @@
 - 了解 LLM Agent 的架构设计和主流框架
 - 理解 RAG 技术的原理和实现方式
 - 了解 LLM 微调的基本概念和方法
-- 区分 Prompt、斜杠命令、Instructions、Skill、MCP、Agent 与 Subagent
+- 区分 Prompt、斜杠命令、Instructions、SOP、Skill、MCP、Agent 与 Subagent
 - 设计包含最小权限、人工审查和可量化指标的 AI DevOps 工作流
 
 ## 📁 目录结构

@@ -94,7 +94,7 @@ ai-devops-improve/
 
 ### 2. AI 软件开发基础研究
 
-如果已经了解 LLM 基础，可直接阅读 [AI 软件开发核心概念与 DevOps 实践](./00-ai-common/06-ai-software-development-concepts.md)，其中包含 Prompt、斜杠命令、MCP、Skill、Agent 的关系图、实际案例、安全护栏和评估指标。
+如果已经了解 LLM 基础，可直接阅读 [AI 软件开发核心概念与 DevOps 实践](./00-ai-common/06-ai-software-development-concepts.md)，其中包含 Prompt、斜杠命令、SOP、MCP、Skill、Agent 的关系图、实际案例、安全护栏和评估指标。
 
 ## 研究成果
 
