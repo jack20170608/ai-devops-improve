@@ -44,6 +44,14 @@
 - 标签：微调
 - 状态：✅ 已完成
 
+### 06. AI 软件开发核心概念与 DevOps 实践
+
+用通俗类比、流程图和真实故障修复案例理解 Prompt、斜杠命令、Instructions、Skill、MCP、Agent 与 Subagent，并学习安全护栏和评估方法。
+
+- 难度：入门
+- 标签：AI 软件开发、Agent、MCP、DevOps
+- 状态：✅ 已完成
+
 ## 📚 学习路径
 
 建议按照以下顺序学习：
@@ -73,6 +81,11 @@
    - 预计时间：90 分钟
    - 目标：掌握模型微调技术
 
+6. **第六步：AI 软件开发与 DevOps 实践**
+   - 文档：[06-ai-software-development-concepts.md](./06-ai-software-development-concepts.md)
+   - 预计时间：45 分钟
+   - 目标：理解 AI 开发工具的分工，并能设计受控、可验证的 Agent 工作流
+
 ## 🎯 学习目标
 
 完成本目录学习后，你将能够：
@@ -82,6 +95,8 @@
 - 了解 LLM Agent 的架构设计和主流框架
 - 理解 RAG 技术的原理和实现方式
 - 了解 LLM 微调的基本概念和方法
+- 区分 Prompt、斜杠命令、Instructions、Skill、MCP、Agent 与 Subagent
+- 设计包含最小权限、人工审查和可量化指标的 AI DevOps 工作流
 
 ## 📁 目录结构
 
@@ -92,9 +107,10 @@
 ├── 02-prompt-engineering.md     # 提示词工程基础 ✅
 ├── 03-llm-agents.md             # LLM Agent 入门 ✅
 ├── 04-rag-overview.md           # RAG 技术概述 ✅
-└── 05-fine-tuning.md            # LLM 微调入门 ✅
+├── 05-fine-tuning.md            # LLM 微调入门 ✅
+└── 06-ai-software-development-concepts.md # AI 软件开发与 DevOps 实践 ✅
 ```
 
 ---
 
-*&copy; 2024 AI DevOps 研究 | [返回首页](../index.html)*
+*&copy; 2024 AI DevOps 研究 | [返回首页](../README.md)*

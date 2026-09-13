@@ -1,6 +1,5 @@
 # AI DevOps 研发效能提升研究
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/your-repo/ai-devops-improve)](https://github.com/your-repo/ai-devops-improve/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/your-repo/ai-devops-improve)](https://github.com/your-repo/ai-devops-improve/network)
 
@@ -75,52 +74,36 @@
 
 ```
 ai-devops-improve/
-├── docs/                    # 研究文档
-│   ├── research/           # 研究报告
-│   └── tools/              # 工具测评
-├── src/                    # 源代码
-│   ├── scripts/            # 自动化脚本
-│   └── demos/              # 示例代码
-├── configs/                # 配置文件
-├── tests/                  # 测试用例
+├── 00-ai-common/           # AI 基础概念与 AI 软件开发研究
+│   ├── README.md           # 学习路径
+│   ├── 01-ai-basics.md
+│   ├── 02-prompt-engineering.md
+│   ├── 03-llm-agents.md
+│   ├── 04-rag-overview.md
+│   ├── 05-fine-tuning.md
+│   └── 06-ai-software-development-concepts.md
 ├── README.md               # 项目说明
-└── LICENSE                 # 许可证
+└── LICENSE                 # 许可证（规划中）
 ```
 
 ## 快速开始
 
-### 1. 克隆项目
+### 1. 查看学习路径
 
-```bash
-git clone https://github.com/your-repo/ai-devops-improve.git
-cd ai-devops-improve
-```
+从 [AI 基础学习路径](./00-ai-common/README.md) 开始，文档按建议顺序排列，无需安装依赖。
 
-### 2. 安装依赖
+### 2. AI 软件开发基础研究
 
-```bash
-# 根据实际项目调整
-npm install
-# 或
-pip install -r requirements.txt
-```
-
-### 3. 运行示例
-
-```bash
-# 运行演示脚本
-npm run demo
-# 或
-python src/demos/main.py
-```
+如果已经了解 LLM 基础，可直接阅读 [AI 软件开发核心概念与 DevOps 实践](./00-ai-common/06-ai-software-development-concepts.md)，其中包含 Prompt、斜杠命令、MCP、Skill、Agent 的关系图、实际案例、安全护栏和评估指标。
 
 ## 研究成果
 
 ### 已完成
 
-- [x] AI 编程助手对比分析报告
-- [x] Copilot 效能提升评估
-- [x] AI 代码审查工具调研
+- [x] AI、LLM、RAG 与微调基础资料
+- [x] 提示词工程基础
+- [x] LLM Agent 基础
+- [x] AI 软件开发核心概念与 DevOps 实践
 
 ### 进行中
 
@@ -134,7 +117,7 @@ python src/demos/main.py
 
 ## 贡献指南
 
-欢迎贡献！请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详情。
+欢迎通过 Issue、PR 和实践案例参与研究。独立的贡献指南尚未建立。
 
 ### 参与方式
 
@@ -144,7 +127,7 @@ python src/demos/main.py
 
 ## 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 了解详情。
+许可证文件尚未加入仓库，后续将在确认许可方式后补充。
 
 ---
 
