@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 基础 - 索引</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --border-color: #e0e0e0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: var(--text-color);
+        }
+        h1 { color: var(--primary-color); border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; }
+        h2 { color: var(--primary-color); margin-top: 30px; }
+        a { color: var(--accent-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card h3 { margin: 0 0 10px 0; color: var(--primary-color); }
+        .card p { margin: 0; color: #666; font-size: 0.95em; }
+        .tag { display: inline-block; background: #e8f4fd; color: var(--accent-color); padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 8px; }
+        footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; color: #888; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>📚 AI 基础</h1>
+
+    <p>本目录包含 AI 基础概念学习资料，帮助你建立对人工智能的系统性认知。</p>
+
+    <h2>📖 文档列表</h2>
+
+    <div class="card">
+        <h3><a href="01-ai-basics.html">AI 基本概念入门</a></h3>
+        <p>介绍人工智能的核心概念、主要分支（机器学习、深度学习、NLP）以及在软件开发中的应用场景。</p>
+        <div>
+            <span class="tag">入门</span>
+            <span class="tag">基础概念</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><a href="02-prompt-engineering.html">提示词工程基础</a></h3>
+        <p>学习如何编写有效的提示词，掌握与 LLM 交互的最佳实践。</p>
+        <div>
+            <span class="tag">进阶</span>
+            <span class="tag">提示词</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><a href="03-llm-agents.html">LLM Agent 入门</a></h3>
+        <p>了解基于大语言模型的 Agent 架构，学习构建 AI 助手的基本原理。</p>
+        <div>
+            <span class="tag">进阶</span>
+            <span class="tag">Agent</span>
+        </div>
+    </div>
+
+    <h2>🗂️ 目录结构</h2>
+
+    <pre>
+    00-ai-common/
+    ├── index.html          # 本索引文件
+    ├── 01-ai-basics.html   # AI 基本概念入门
+    ├── 02-prompt-engineering.html  # 提示词工程（待编写）
+    └── 03-llm-agents.html  # LLM Agent（待编写）
+    </pre>
+
+    <h2>📚 学习路径</h2>
+
+    <ol>
+        <li><strong>第一步</strong>：学习 AI 基本概念 → <a href="01-ai-basics.html">01-ai-basics.html</a></li>
+        <li><strong>第二步</strong>：掌握提示词工程 → <a href="02-prompt-engineering.html">02-prompt-engineering.html</a></li>
+        <li><strong>第三步</strong>：了解 LLM Agent → <a href="03-llm-agents.html">03-llm-agents.html</a></li>
+    </ol>
+
+    <footer>
+        <p>&copy; 2024 AI DevOps 研究 | <a href="../../index.html">返回首页</a></p>
+    </footer>
+</body>
+</html>
