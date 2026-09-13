@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提示词工程基础</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --code-bg: #f4f4f4;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: var(--text-color);
+            background: #fff;
+        }
+
+        h1 { font-size: 2em; color: var(--primary-color); border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { font-size: 1.5em; color: var(--primary-color); margin-top: 40px; padding-left: 15px; border-left: 4px solid var(--accent-color); }
+        h3 { font-size: 1.2em; color: #555; margin-top: 25px; }
+
+        a { color: var(--accent-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .note { background: #e8f4fd; border-left: 4px solid var(--accent-color); padding: 15px 20px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+        .note strong { color: var(--accent-color); }
+
+        code { font-family: 'Fira Code', 'Consolas', monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.9em; color: #e74c3c; }
+
+        pre { background: #282c34; color: #abb2bf; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; color: #abb2bf; font-size: 0.85em; }
+
+        .comment { color: #5c6370; font-style: italic; }
+        .keyword { color: #c678dd; }
+        .function { color: #61afef; }
+        .string { color: #98c379; }
+        .number { color: #d19a66; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+        th { background: var(--bg-color); font-weight: 600; }
+        tr:nth-child(even) { background: #fafafa; }
+
+        ul, ol { margin: 15px 0; padding-left: 25px; }
+        li { margin: 8px 0; }
+
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 40px 0; }
+        blockquote { border-left: 4px solid #ddd; margin: 20px 0; padding: 10px 20px; color: #666; background: #fafafa; }
+
+        .summary-table { background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .summary-table table { margin: 0; }
+
+        footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; color: #888; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>提示词工程基础</h1>
+
+    <div class="note">
+        <strong>前置知识：</strong> 了解 <a href="01-ai-basics.html">AI 基本概念</a>，熟悉 LLM 的基本原理
+    </div>
+
+    <p>提示词工程（Prompt Engineering）是与大型语言模型（LLM）高效交互的核心技能。它涉及设计、优化输入提示词，以获得更准确、更有价值的输出。掌握提示词工程，能够让你充分发挥 AI 的能力，大幅提升工作效率。</p>
+
+    <h2>1. 为什么提示词工程重要？</h2>
+
+    <p>LLM 的输出质量高度依赖于输入提示词的质量。同一个模型，不同的提示词可能产生截然不同的结果。好的提示词能够：</p>
+
+    <ul>
+        <li><strong>提高准确性</strong>：获得更精确、更相关的回答</li>
+        <li><strong>减少迭代</strong>：减少来回修正的次数</li>
+        <li><strong>扩展能力</strong>：解锁模型的高级功能</li>
+        <li><strong>控制输出</strong>：获得符合特定格式或风格的结果</li>
+    </ul>
+
+    <div class="note">
+        <strong>关键洞察：</strong> 提示词工程不是「欺骗」AI，而是学会如何清晰地表达你的需求。正如好的问题需要精心设计，与 AI 的沟通也需要技巧。
+    </div>
+
+    <h2>2. 提示词核心原则</h2>
+
+    <h3>2.1 清晰明确（Clear）</h3>
+
+    <p>你的指令越清晰，模型越能理解你的意图。避免模糊或多义的表达。</p>
+
+    <pre><code><span class="comment"># ❌ 模糊的提示词</span>
+<span class="string">"写一些关于Python的东西"</span>
+
+<span class="comment"># ✅ 清晰的提示词</span>
+<span class="string">"写一个Python函数，计算列表中所有偶数的和，并包含类型注解和单元测试"</span></code></pre>
+
+    <h3>2.2 具体详细（Specific）</h3>
+
+    <p>提供足够的上下文和具体要求，让模型知道确切需要做什么。</p>
+
+    <pre><code><span class="comment"># ❌ 过于笼统</span>
+<span class="string">"帮我写一封邮件"</span>
+
+<span class="comment"># ✅ 具体详细</span>
+<span class="string">"写一封邮件给客户，内容是：
+- 主题：项目进度更新
+- 开头礼貌问候
+- 说明本周完成的3个功能
+- 提及下周的里程碑
+- 结尾期待合作
+- 语气专业但亲切"</span></code></pre>
+
+    <h3>2.3 结构化（Structured）</h3>
+
+    <p>使用清晰的结构组织提示词，模型能更好地理解和执行。</p>
+
+    <pre><code><span class="comment"># 结构化提示词示例</span>
+<span class="string">"""
+任务：审查以下Python代码
+
+代码：
+```python
+def process_data(data):
+    results = []
+    for item in data:
+        if item['active']:
+            results.append(item['value'] * 2)
+    return results
+```
+
+要求：
+1. 指出代码中的问题
+2. 提出改进建议
+3. 提供优化后的代码
+
+输出格式：
+- 问题列表（编号）
+- 建议列表（编号）
+- 优化代码（代码块）
+"""</span></code></pre>
+
+    <h3>2.4 提供上下文（Context）</h3>
+
+    <p>给模型足够的背景信息，帮助它理解你的需求场景。</p>
+
+    <pre><code><span class="comment"># ❌ 缺乏上下文</span>
+<span class="string">"如何实现认证？"</span>
+
+<span class="comment"># ✅ 有上下文</span>
+<span class="string">"我正在开发一个Node.js的REST API后端服务，使用Express框架。
+需要实现用户认证功能：
+- 使用JWT令牌
+- 支持刷新令牌
+- 密码需要加密存储
+- 预计日活用户10万
+
+请提供实现方案和关键代码"</span></code></pre>
+
+    <h2>3. 提示词模式与技巧</h2>
+
+    <h3>3.1 角色扮演（Role Playing）</h3>
+
+    <p>让模型扮演特定角色，可以获得更专业的输出。</p>
+
+    <pre><code><span class="comment"># 角色扮演示例</span>
+<span class="string">"你是一位拥有10年经验的高级Python工程师，擅长编写高性能、易维护的代码。
+请审查以下代码，指出可以优化的地方：
+
+```python
+def find_duplicates(lst):
+    seen = set()
+    duplicates = []
+    for item in lst:
+        if item in seen:
+            duplicates.append(item)
+        seen.add(item)
+    return duplicates
+```
+
+请从以下角度审查：
+1. 性能
+2. 代码风格
+3. 错误处理
+4. 可读性"</span></code></pre>
+
+    <h3>3.2 few-shot 学习（示例引导）</h3>
+
+    <p>提供输入输出示例，帮助模型理解你的期望格式。</p>
+
+    <pre><code><span class="comment"># Few-shot 示例</span>
+<span class="string">"""将以下命令转换为自然语言描述：
+
+示例：
+git push -u origin main -> "将本地main分支推送到远程origin仓库，并设置为上游分支"
+git merge feature/login -> "将feature/login分支合并到当前分支"
+git reset --hard HEAD~3 -> "将代码库回退到3个提交之前"
+
+请转换：
+git rebase -i HEAD~5
+"""</span></code></pre>
+
+    <h3>3.3 思维链（Chain of Thought）</h3>
+
+    <p>引导模型展示推理过程，可以提高复杂任务的准确性。</p>
+
+    <pre><code><span class="comment"># 思维链提示</span>
+<span class="string">"""请逐步推理以下问题：
+
+问题：如果一个球队赢了60%的比赛，当他们先得分时，胜率提高到70%。先得分的比赛占40%。请问先得分对获胜的提升是多少？
+
+请按以下步骤推理：
+1. 定义变量
+2. 计算相关概率
+3. 列出公式
+4. 计算结果
+5. 给出答案
+"""</span></code></pre>
+
+    <h3>3.4 分步指令（Step-by-Step）</h3>
+
+    <p>将复杂任务拆分成多个步骤，逐一完成。</p>
+
+    <pre><code><span class="comment"># 分步指令示例</span>
+<span class="string">"""帮我创建一个REST API用户接口，请按以下步骤进行：
+
+步骤1：定义数据模型
+- 用户包含：id, username, email, password_hash, created_at, updated_at
+- 使用SQLAlchemy
+
+步骤2：创建API端点
+- POST /users - 创建用户
+- GET /users/{id} - 获取用户
+- PUT /users/{id} - 更新用户
+- DELETE /users/{id} - 删除用户
+
+步骤3：添加认证
+- 使用JWT
+- 实现登录接口
+
+请依次提供每个步骤的代码"</span></code></pre>
+
+    <h3>3.5 格式化输出（Output Formatting）</h3>
+
+    <p>明确指定输出格式，方便后续处理。</p>
+
+    <pre><code><span class="comment"># 格式化输出示例</span>
+<span class="string">"""分析以下Python代码的性能问题，提供JSON格式的输出：
+
+代码：
+```python
+def slow_function(items):
+    result = []
+    for i in range(len(items)):
+        for j in range(len(items)):
+            if items[i] == items[j]:
+                result.append(items[i])
+    return list(set(result))
+```
+
+输出格式：
+{
+  "issues": [
+    {"severity": "high/medium/low", "description": "...", "line": "..."}
+  ],
+  "suggestions": [
+    {"description": "...", "code": "..."}
+  ],
+  "optimized_code": "..."
+}"""</span></code></pre>
+
+    <h3>3.6 约束限制（Constraints）</h3>
+
+    <p>明确告诉模型什么是不要的，避免不期望的输出。</p>
+
+    <pre><code><span class="comment"># 约束限制示例</span>
+<span class="string">"""用Python实现一个排序算法，要求：
+- 时间复杂度O(n log n)
+- 不能使用任何内置排序函数（如sorted, list.sort）
+- 代码需要包含类型注解
+- 需要有docstring文档
+- 不要使用任何第三方库
+
+请提供完整代码"""</span></code></pre>
+
+    <h2>4. 高级技巧</h2>
+
+    <h3>4.1 迭代优化</h3>
+
+    <p>提示词往往需要多次迭代才能达到理想效果。</p>
+
+    <table>
+        <tr>
+            <th>迭代轮次</th>
+            <th>提示词</th>
+            <th>改进点</th>
+        </tr>
+        <tr>
+            <td>第1轮</td>
+            <td>写一个排序函数</td>
+            <td>基础要求</td>
+        </tr>
+        <tr>
+            <td>第2轮</td>
+            <td>写一个快速排序函数，包含单元测试</td>
+            <td>明确算法和测试要求</td>
+        </tr>
+        <tr>
+            <td>第3轮</td>
+            <td>用Python实现快速排序，包含类型注解、docstring、完整的单元测试，覆盖边界情况</td>
+            <td>完整的技术要求</td>
+        </tr>
+    </table>
+
+    <h3>4.2 系统提示词（System Prompt）</h3>
+
+    <p>系统提示词设置 AI 的行为模式和整体约束。</p>
+
+    <pre><code><span class="comment"># 系统提示词示例</span>
+<span class="string">系统提示词：
+"你是一位专业的技术文档工程师，擅长用清晰、简洁的语言解释复杂的技术概念。
+你的写作风格：
+- 使用简洁的句子
+- 多用例子说明
+- 适当使用代码示例
+- 避免过度技术化的术语，必要时解释"
+
+用户提示词：
+"解释什么是异步编程"</span></code></pre>
+
+    <h3>4.3 温度参数（Temperature）</h3>
+
+    <p>控制输出的随机性，不同任务需要不同的设置。</p>
+
+    <table>
+        <tr>
+            <th>Temperature 值</th>
+            <th>特点</th>
+            <th>适用场景</th>
+        </tr>
+        <tr>
+            <td>0.0 - 0.2</td>
+            <td>确定性高，创意少</td>
+            <td>代码生成、翻译、事实性问题</td>
+        </tr>
+        <tr>
+            <td>0.5 - 0.7</td>
+            <td>平衡</td>
+            <td>日常对话、内容创作</td>
+        </tr>
+        <tr>
+            <td>0.8 - 1.0</td>
+            <td>创意性强，变化多</td>
+            <td>头脑风暴、创意写作</td>
+        </tr>
+    </table>
+
+    <h3>4.4 提示词模板</h3>
+
+    <pre><code><span class="comment"># 常用提示词模板</span>
+
+<span class="comment"># 模板1：代码审查</span>
+<span class="string">"""作为[语言]专家，审查以下代码：
+[代码]
+
+请从以下角度分析：
+1. [角度1]
+2. [角度2]
+3. [角度3]
+
+输出格式：[格式要求]"""</span>
+
+<span class="comment"># 模板2：代码生成</span>
+<span class="string">"""用[语言]实现[功能]，要求：
+1. [要求1]
+2. [要求2]
+3. [要求3]
+
+约束条件：
+- [约束1]
+- [约束2]
+
+请提供完整代码"""</span>
+
+<span class="comment"># 模板3：问题解答</span>
+<span class="string">"""作为[领域]专家，回答以下问题：
+[问题]
+
+要求：
+- 提供详细解释
+- 包含代码示例（如果适用）
+- 指出常见的误区
+- 推荐进一步学习的资源"""</span></code></pre>
+
+    <h2>5. 常见问题与解决方案</h2>
+
+    <h3>5.1 输出太简短</h3>
+
+    <pre><code><span class="comment"># 问题：模型回答过于简洁</span>
+<span class="comment"># 解决：明确要求详细程度</span>
+
+<span class="string">"详细解释Python装饰器的工作原理，至少包含：
+- 概念介绍
+- 语法说明
+- 3个实际使用例子
+- 注意事项
+- 每个部分不少于100字"</span></code></pre>
+
+    <h3>5.2 输出格式混乱</h3>
+
+    <pre><code><span class="comment"># 问题：输出格式不统一</span>
+<span class="comment"># 解决：提供清晰的格式规范</span>
+
+<span class="string">"""请以以下JSON格式输出分析结果：
+{
+  "summary": "一句话总结",
+  "pros": ["优点1", "优点2"],
+  "cons": ["缺点1", "缺点2"],
+  "recommendation": "最终建议"
+}
+
+分析对象：[分析内容]"""</span></code></pre>
+
+    <h3>5.3 理解有偏差</h3>
+
+    <pre><code><span class="comment"># 问题：模型理解与预期不符</span>
+    <span class="comment"># 解决：提供更多背景和示例</span>
+
+    <span class="string">"""关于[主题]，请注意：
+- [背景1]
+- [背景2]
+
+示例参考：
+输入: [示例1]
+期望输出: [期望1]
+
+输入: [示例2]
+期望输出: [期望2]
+
+现在请处理：
+[实际输入]"""</span></code></pre>
+
+    <h3>5.4 知识过时</h3>
+
+    <pre><code><span class="comment"># 问题：模型知识截止日期导致信息过时</span>
+<span class="comment"># 解决：明确说明需要最新信息</span>
+
+<span class="string">"""请查找[主题]的最新信息（2024年及以后）。
+如果以下信息已过时，请指出并提供最新版本：
+[已知信息]
+
+请说明信息来源和日期"""</span></code></pre>
+
+    <h2>6. 实践练习</h2>
+
+    <h3>练习1：优化提示词</h3>
+
+    <p>将以下提示词优化为更有效的版本：</p>
+
+    <pre><code><span class="comment"># 原始提示词</span>
+<span class="string">"写一个Python程序"</span>
+
+<span class="comment"># 优化方向</span>
+- 明确程序功能
+- 指定输入输出
+- 添加约束条件
+- 指定代码风格</code></pre>
+
+    <h3>练习2：编写提示词</h3>
+
+    <p>为以下场景编写提示词：</p>
+
+    <ol>
+        <li>让 AI 扮演资深架构师，审查微服务设计方案</li>
+        <li>生成符合公司规范的 API 文档</li>
+        <li>创建技术博客文章的大纲</li>
+        <li>调试一段有问题的 SQL 查询</li>
+    </ol>
+
+    <h2>7. 总结</h2>
+
+    <p>提示词工程是一项需要不断实践的技能。掌握以下核心要点：</p>
+
+    <ul>
+        <li><strong>清晰明确</strong>：让你的需求准确传达</li>
+        <li><strong>提供上下文</strong>：给模型足够的信息</li>
+        <li><strong>结构化</strong>：组织好提示词结构</li>
+        <li><strong>使用示例</strong>：Few-shot 往往很有效</li>
+        <li><strong>迭代优化</strong>：不要期望一次就完美</li>
+    </ul>
+
+    <div class="summary-table">
+        <table>
+            <tr>
+                <th>技巧</th>
+                <th>适用场景</th>
+            </tr>
+            <tr>
+                <td>角色扮演</td>
+                <td>需要专业知识的任务</td>
+            </tr>
+            <tr>
+                <td>Few-shot</td>
+                <td>需要特定格式输出</td>
+            </tr>
+            <tr>
+                <td>思维链</td>
+                <td>复杂推理问题</td>
+            </tr>
+            <tr>
+                <td>分步指令</td>
+                <td>多步骤复杂任务</td>
+            </tr>
+            <tr>
+                <td>格式化输出</td>
+                <td>需要程序化处理的结果</td>
+            </tr>
+            <tr>
+                <td>约束限制</td>
+                <td>需要特定风格或限制</td>
+            </tr>
+        </table>
+    </div>
+
+    <hr>
+
+    <h2>参考资料</h2>
+    <ul>
+        <li><a href="https://platform.openai.com/docs/guides/prompt-engineering" target="_blank">OpenAI 提示词工程指南</a></li>
+        <li><a href="https://www.anthropic.com/engineering/prompt-engineering" target="_blank">Anthropic 提示词工程</a></li>
+        <li><a href="https://www.promptingguide.ai/" target="_blank">Prompt Engineering Guide</a></li>
+        <li><a href="https://learn.microsoft.com/zh-cn/azure/ai-services/openai/concepts/prompt-engineering" target="_blank">Microsoft Prompt Engineering</a></li>
+    </ul>
+
+    <footer>
+        <p>&copy; 2024 AI DevOps 研究 | <a href="../../index.html">返回首页</a> | <a href="index.html">返回目录</a></p>
+    </footer>
+</body>
+</html>

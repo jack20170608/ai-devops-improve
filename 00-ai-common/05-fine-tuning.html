@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM 微调入门</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --code-bg: #f4f4f4;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: var(--text-color);
+            background: #fff;
+        }
+
+        h1 { font-size: 2em; color: var(--primary-color); border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { font-size: 1.5em; color: var(--primary-color); margin-top: 40px; padding-left: 15px; border-left: 4px solid var(--accent-color); }
+        h3 { font-size: 1.2em; color: #555; margin-top: 25px; }
+
+        a { color: var(--accent-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .note { background: #e8f4fd; border-left: 4px solid var(--accent-color); padding: 15px 20px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+        .note strong { color: var(--accent-color); }
+
+        code { font-family: 'Fira Code', 'Consolas', monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.9em; color: #e74c3c; }
+
+        pre { background: #282c34; color: #abb2bf; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; color: #abb2bf; font-size: 0.85em; }
+
+        .comment { color: #5c6370; font-style: italic; }
+        .keyword { color: #c678dd; }
+        .function { color: #61afef; }
+        .string { color: #98c379; }
+        .number { color: #d19a66; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+        th { background: var(--bg-color); font-weight: 600; }
+        tr:nth-child(even) { background: #fafafa; }
+
+        ul, ol { margin: 15px 0; padding-left: 25px; }
+        li { margin: 8px 0; }
+
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 40px 0; }
+        blockquote { border-left: 4px solid #ddd; margin: 20px 0; padding: 10px 20px; color: #666; background: #fafafa; }
+
+        .summary-table { background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .summary-table table { margin: 0; }
+
+        footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; color: #888; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>LLM 微调入门</h1>
+
+    <div class="note">
+        <strong>前置知识：</strong> 了解 <a href="01-ai-basics.html">AI 基本概念</a>、<a href="02-prompt-engineering.html">提示词工程</a> 和 <a href="03-llm-agents.html">LLM Agent</a>
+    </div>
+
+    <p>模型微调（Fine-tuning）是指在一个预训练模型的基础上，使用特定领域的数据进行进一步训练，使模型能够更好地完成特定任务。相比于提示词工程，微调能够更深入地定制模型行为，是构建专业化 AI 应用的重要技术。</p>
+
+    <h2>1. 为什么需要微调？</h2>
+
+    <p>虽然通用的预训练模型能力强大，但在特定场景下往往表现不足。微调可以解决以下问题：</p>
+
+    <h3>1.1 提示词工程的局限性</h3>
+
+    <table>
+        <tr>
+            <th>问题</th>
+            <th>提示词工程</th>
+            <th>微调</th>
+        </tr>
+        <tr>
+            <td>知识局限性</td>
+            <td>模型知识受限于训练数据</td>
+            <td>注入新知识</td>
+        </tr>
+        <tr>
+            <td>风格一致性</td>
+            <td>难以保持一致的输出风格</td>
+            <td>学习特定风格</td>
+        </tr>
+        <tr>
+            <td>Token 浪费</td>
+            <td>每次请求需要重复提示</td>
+            <td>提示精简，节省成本</td>
+        </tr>
+        <tr>
+            <td>复杂指令</td>
+            <td>复杂指令容易失效</td>
+            <td>内化复杂任务模式</td>
+        </tr>
+        <tr>
+            <td>延迟敏感</td>
+            <td>长提示增加响应时间</td>
+            <td>响应更快</td>
+        </tr>
+    </table>
+
+    <h3>1.2 微调的典型应用场景</h3>
+
+    <ul>
+        <li><strong>领域专属模型</strong>：医疗、法律、金融等专业领域</li>
+        <li><strong>特定风格</strong>：品牌文风、代码规范、对话风格</li>
+        <li><strong>任务优化</strong>：情感分析、实体识别、代码生成等特定任务</li>
+        <li><strong>私有化部署</strong>：数据不出域的敏感场景</li>
+        <li><strong>成本优化</strong>：使用小模型替代大模型</li>
+    </ul>
+
+    <div class="note">
+        <strong>建议：</strong> 优先尝试提示词工程，只有当提示词工程无法满足需求时再考虑微调。微调成本高、周期长，应作为最后手段。
+    </div>
+
+    <h2>2. 微调的基本概念</h2>
+
+    <h3>2.1 预训练 vs 微调</h3>
+
+    <pre><code><span class="comment"># 预训练阶段</span>
+大规模通用数据 ──▶ 基础模型（通用能力）
+
+<span class="comment"># 微调阶段</span>
+领域特定数据 ──▶ 基础模型 ──▶ 微调模型（专业能力）
+
+<span class="comment"># 对比</span>
+┌──────────────┬─────────────────┬─────────────────┐
+│    阶段      │    训练数据     │    目标能力     │
+├──────────────┼─────────────────┼─────────────────┤
+│ 预训练       │ 海量通用文本     │ 通用语言理解    │
+│ 微调         │ 任务/领域数据    │ 特定任务能力    │
+└──────────────┴─────────────────┴─────────────────┘</code></pre>
+
+    <h3>2.2 微调的训练方式</h3>
+
+    <h4>全参数微调（Full Fine-tuning）</h4>
+
+    <p>更新模型的所有参数。</p>
+
+    <ul>
+        <li><strong>优点</strong>：效果最好，可塑性最强</li>
+        <li><strong>缺点</strong>：需要大量 GPU 显存和计算资源</li>
+        <li><strong>适用</strong>：有充足资源，数据量大的场景</li>
+    </ul>
+
+    <h4>参数高效微调（PEFT）</h4>
+
+    <p>只更新部分参数，大大降低资源需求。</p>
+
+    <table>
+        <tr>
+            <th>方法</th>
+            <th>描述</th>
+            <th>优点</th>
+            <th>缺点</th>
+        </tr>
+        <tr>
+            <td>LoRA</td>
+            <td>低秩适配，添加可训练的低秩矩阵</td>
+            <td>显存需求低，训练快</td>
+            <td>效果略低于全参数</td>
+        </tr>
+        <tr>
+            <td>QLoRA</td>
+            <td>量化 + LoRA，进一步压缩</td>
+            <td>可在消费级 GPU 上训练</td>
+            <td>训练时间较长</td>
+        </tr>
+        <tr>
+            <td>Prefix Tuning</td>
+            <td>在输入前添加可训练前缀</td>
+            <td>参数量极少</td>
+            <td>效果不稳定</td>
+        </tr>
+        <tr>
+            <td>Adapter</td>
+            <td>在 Transformer 层插入适配器</td>
+            <td>可插拔，便于切换</td>
+            <td>需要修改模型结构</td>
+        </tr>
+    </table>
+
+    <h3>2.3 训练数据格式</h3>
+
+    <h4>Instruction Tuning（指令微调）</h4>
+
+    <pre><code><span class="comment"># 指令微调数据格式</span>
+{
+  <span class="string">"instruction"</span>: <span class="string">"将以下英文翻译成中文"</span>,
+  <span class="string">"input"</span>: <span class="string">"Hello, world!"</span>,
+  <span class="string">"output"</span>: <span class="string">"你好，世界！"</span>
+}
+
+<span class="comment"># 更复杂的格式</span>
+{
+  <span class="string">"system"</span>: <span class="string">"你是一个专业的技术文档工程师"</span>,
+  <span class="string">"instruction"</span>: <span class="string">"为以下代码生成文档"</span>,
+  <span class="string">"input"</span>: <span class="string">"def add(a, b): return a + b"</span>,
+  <span class="string">"output"</span>: <span class="string">"## add 函数\n\n...文档内容..."</span>
+}</code></pre>
+
+    <h4>ChatML 格式</h4>
+
+    <pre><code><span class="comment"># ChatML 格式（多轮对话）</span>
+[
+  {<span class="string">"role"</span>: <span class="string">"system"</span>, <span class="string">"content"</span>: <span class="string">"你是一个有帮助的助手"</span>},
+  {<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: <span class="string">"什么是机器学习？"</span>},
+  {<span class="string">"role"</span>: <span class="string">"assistant"</span>, <span class="string">"content"</span>: <span class="string">"机器学习是..."</span>},
+  {<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: <span class="string">"它和深度学习有什么区别？"</span>}
+]
+
+<span class="comment"># 训练时使用 messages 格式</span>
+{
+  <span class="string">"messages"</span>: [
+    {<span class="string">"role"</span>: <span class="string">"system"</span>, <span class="string">"content"</span>: <span class="string">"..."</span>},
+    {<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: <span class="string">"..."</span>},
+    {<span class="string">"role"</span>: <span class="string">"assistant"</span>, <span class="string">"content"</span>: <span class="string">"..."</span>}
+  ]
+}</code></pre>
+
+    <h2>3. 主流微调框架</h2>
+
+    <h3>3.1 Hugging Face Transformers</h3>
+
+    <p>最通用的深度学习框架，支持大多数预训练模型。</p>
+
+    <pre><code><span class="comment"># 使用 Transformers 微调（简化版）</span>
+<span class="keyword">from</span> transformers <span class="keyword">import</span> AutoModelForCausalLM, AutoTokenizer, TrainingArguments
+<span class="keyword">from</span> trl <span class="keyword">import</span> SFTTrainer
+<span class="keyword">from</span> datasets <span class="keyword">import</span> Dataset
+
+<span class="comment"># 1. 加载模型和分词器</span>
+model_name = <span class="string">"meta-llama/Llama-2-7b-hf"</span>
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    device_map=<span class="string">"auto"</span>,
+    load_in_8bit=<span class="keyword">True</span>  <span class="comment"># 8位量化，减少显存</span>
+)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+<span class="comment"># 2. 准备数据</span>
+train_data = Dataset.from_list(train_samples)
+
+<span class="comment"># 3. 配置训练参数</span>
+training_args = TrainingArguments(
+    output_dir=<span class="string">"./output"</span>,
+    num_train_epochs=<span class="number">3</span>,
+    per_device_train_batch_size=<span class="number">4</span>,
+    learning_rate=<span class="number">2e-4</span>,
+    save_strategy=<span class="string">"epoch"</span>,
+    logging_steps=<span class="number">10</span>,
+)
+
+<span class="comment"># 4. 创建训练器</span>
+trainer = SFTTrainer(
+    model=model,
+    train_dataset=train_data,
+    tokenizer=tokenizer,
+    args=training_args,
+    max_seq_length=<span class="number">512</span>,
+)
+
+<span class="comment"># 5. 开始训练</span>
+trainer.train()</code></pre>
+
+    <h3>3.2 LoRA 微调（PEFT）</h3>
+
+    <p>参数高效微调的代表，只需训练少量参数。</p>
+
+    <pre><code><span class="comment"># 使用 PEFT 实现 LoRA 微调</span>
+<span class="keyword">from</span> transformers <span class="keyword">import</span> AutoModelForCausalLM, AutoTokenizer
+<span class="keyword">from</span> peft <span class="keyword">import</span> LoraConfig, get_peft_model, TaskType
+
+<span class="comment"># 1. 加载基础模型</span>
+model = AutoModelForCausalLM.from_pretrained(
+    <span class="string">"meta-llama/Llama-2-7b-hf"</span>,
+    load_in_8bit=<span class="keyword">True</span>,
+    device_map=<span class="string">"auto"</span>
+)
+
+<span class="comment"># 2. 配置 LoRA</span>
+lora_config = LoraConfig(
+    r=<span class="number">8</span>,                       <span class="comment"># LoRA 秩</span>
+    lora_alpha=<span class="number">16</span>,                <span class="comment"># LoRA 缩放因子</span>
+    target_modules=[<span class="string">"q_proj"</span>, <span class="string">"v_proj"</span>],  <span class="comment"># 目标层</span>
+    lora_dropout=<span class="number">0.05</span>,
+    bias=<span class="string">"none"</span>,
+    task_type=TaskType.CAUSAL_LM
+)
+
+<span class="comment"># 3. 应用 LoRA</span>
+model = get_peft_model(model, lora_config)
+
+<span class="comment"># 4. 打印可训练参数</span>
+model.print_trainable_parameters()
+<span class="comment"># 输出: trainable params: 4,194,304 || all params: 6,742,609,920 || trainable%: 0.06%</span></code></pre>
+
+    <h3>3.3 Unsloth</h3>
+
+    <p>专注于加速 LoRA 微调的工具，训练速度提升 2-5 倍。</p>
+
+    <pre><code><span class="comment"># 使用 Unsloth 加速微调</span>
+<span class="keyword">from</span> unsloth <span class="keyword">import</span> FastLanguageModel
+<span class="keyword">import</span> torch
+
+<span class="comment"># 1. 加载模型（Unsloth 优化版）</span>
+model, tokenizer = FastLanguageModel.from_pretrained(
+    model_name = <span class="string">"unsloth/llama-2-7b-bnb-4bit"</span>,
+    max_seq_length = <span class="number">2048</span>,
+    dtype = torch.float16,
+    load_in_4bit = <span class="keyword">True</span>,
+)
+
+<span class="comment"># 2. 添加 LoRA</span>
+model = FastLanguageModel.get_peft_model(
+    model,
+    r = <span class="number">16</span>,
+    target_modules = [<span class="string">"q_proj"</span>, <span class="string">"k_proj"</span>, <span class="string">"v_proj"</span>, <span class="string">"o_proj"</span>],
+    lora_alpha = <span class="number">16</span>,
+    lora_dropout = <span class="number">0</span>,
+    bias = <span class="string">"none"</span>,
+    use_gradient_checkpointing = <span class="string">"unsloth"</span>,
+)
+
+<span class="comment"># 3. 使用 SFTTrainer 训练</span>
+<span class="comment"># ... 后续训练代码相同</span></code></pre>
+
+    <h3>3.4 框架对比</h3>
+
+    <table>
+        <tr>
+            <th>框架</th>
+            <th>特点</th>
+            <th>适用场景</th>
+            <th>学习曲线</th>
+        </tr>
+        <tr>
+            <td>Transformers</td>
+            <td>通用性强，生态丰富</td>
+            <td>各种微调场景</td>
+            <td>中等</td>
+        </tr>
+        <tr>
+            <td>PEFT</td>
+            <td>参数高效，显存需求低</td>
+            <td>资源受限场景</td>
+            <td>低</td>
+        </tr>
+        <tr>
+            <td>Unsloth</td>
+            <td>训练速度快，显存优化好</td>
+            <td>快速实验、小团队</td>
+            <td>低</td>
+        </tr>
+        <tr>
+            <td>DeepSpeed</td>
+            <td>分布式训练、ZeRO 优化</td>
+            <td>大规模训练</td>
+            <td>高</td>
+        </tr>
+        <tr>
+            <td>Axolotl</td>
+            <td>一键微调，配置简单</td>
+            <td>快速上手</td>
+            <td>低</td>
+        </tr>
+    </table>
+
+    <h2>4. 微调实战流程</h2>
+
+    <h3>4.1 数据准备</h3>
+
+    <h4>数据质量要点</h4>
+
+    <ul>
+        <li><strong>数据量</strong>：通常 1000-10000 条高质量样本即可见效</li>
+        <li><strong>多样性</strong>：覆盖各种场景和边缘情况</li>
+        <li><strong>准确性</strong>：标签准确，格式规范</li>
+        <li><strong>一致性</strong>：风格统一，避免矛盾</li>
+    </ul>
+
+    <h4>数据清洗示例</h4>
+
+    <pre><code><span class="comment"># 数据清洗脚本示例</span>
+<span class="keyword">import</span> json
+<span class="keyword">import</span> re
+
+<span class="keyword">def</span> <span class="function">clean_data</span>(sample):
+    <span class="comment"># 1. 去除特殊字符</span>
+    sample[<span class="string">"output"</span>] = re.sub(r<span class="string">'\s+'</span>, <span class="string">' '</span>, sample[<span class="string">"output"</span>])
+
+    <span class="comment"># 2. 去除过短/过长的样本</span>
+    <span class="keyword">if</span> len(sample[<span class="string">"output"</span>]) < <span class="number">10</span> <span class="keyword">or</span> len(sample[<span class="string">"output"</span>]) > <span class="number">5000</span>:
+        <span class="keyword">return</span> None
+
+    <span class="comment"># 3. 去除重复</span>
+    <span class="keyword">if</span> sample[<span class="string">"output"</span>] <span class="keyword">in</span> seen_outputs:
+        <span class="keyword">return</span> None
+
+    <span class="keyword">return</span> sample
+
+<span class="comment"># 批量处理</span>
+cleaned_data = [s <span class="keyword">for</span> s <span class="keyword">in</span> raw_data <span class="keyword">if</span> (s := clean_data(s))]</code></pre>
+
+    <h3>4.2 训练配置</h3>
+
+    <h4>关键超参数</h4>
+
+    <table>
+        <tr>
+            <th>参数</th>
+            <th>建议值</th>
+            <th>说明</th>
+        </tr>
+        <tr>
+            <td>Learning Rate</td>
+            <td>1e-4 ~ 5e-5</td>
+            <td>学习率过大会导致灾难性遗忘</td>
+        </tr>
+        <tr>
+            <td>Epochs</td>
+            <td>2~5</td>
+            <td>过拟合前停止</td>
+        </tr>
+        <tr>
+            <td>Batch Size</td>
+            <td>4~16</td>
+            <td>根据显存调整</td>
+        </tr>
+        <tr>
+            <td>Warmup Steps</td>
+            <td>100~500</td>
+            <td>学习率预热</td>
+        </tr>
+        <tr>
+            <td>Max Length</td>
+            <td>512~2048</td>
+            <td>根据任务需求</td>
+        </tr>
+    </table>
+
+    <h4>避免灾难性遗忘</h4>
+
+    <pre><code><span class="comment"># 灾难性遗忘应对策略</span>
+
+<span class="comment"># 策略1：降低学习率</span>
+learning_rate = <span class="number">1e-5</span>  <span class="comment"># 比预训练低 10-100 倍</span>
+
+<span class="comment"># 策略2：混合预训练数据</span>
+train_data = interleave(
+    domain_data,      <span class="comment"># 领域数据 80%</span>
+    general_data,     <span class="comment"># 通用数据 20%</span>
+    probabilities = [0.8, 0.2]
+)
+
+<span class="comment"># 策略3：使用 LoRA</span>
+lora_config = LoraConfig(r=<span class="number">8</span>)  <span class="comment"># 只训练少量参数</span>
+
+<span class="comment"># 策略4：渐进式解冻</span>
+<span class="comment"># 逐渐解锁模型层，从顶层向底层</span></code></pre>
+
+    <h3>4.3 训练执行</h3>
+
+    <pre><code><span class="comment"># 完整的微调训练脚本</span>
+<span class="keyword">from</span> transformers <span class="keyword">import</span> AutoModelForCausalLM, AutoTokenizer, TrainingArguments
+<span class="keyword">from</span> trl <span class="keyword">import</span> SFTTrainer
+<span class="keyword">from</span> datasets <span class="keyword">import</span> Dataset
+<span class="keyword">import</span> torch
+
+<span class="comment"># 1. 配置</span>
+model_name = <span class="string">"meta-llama/Llama-2-7b-chat-hf"</span>
+output_dir = <span class="string">"./llama-finetune"</span>
+
+<span class="comment"># 2. 加载模型（4bit 量化）</span>
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype=torch.float16,
+    load_in_4bit=<span class="keyword">True</span>,
+    device_map=<span class="string">"auto"</span>,
+)
+
+<span class="comment"># 3. 加载分词器</span>
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer.pad_token = tokenizer.eos_token
+
+<span class="comment"># 4. 加载数据</span>
+dataset = Dataset.from_json(<span class="string">"train_data.json"</span>)
+
+<span class="comment"># 5. 训练参数</span>
+training_args = TrainingArguments(
+    output_dir=output_dir,
+    num_train_epochs=<span class="number">3</span>,
+    per_device_train_batch_size=<span class="number">4</span>,
+    gradient_accumulation_steps=<span class="number">4</span>,    <span class="comment"># 梯度累积</span>
+    learning_rate=<span class="number">2e-4</span>,
+    warmup_steps=<span class="number">100</span>,
+    save_strategy=<span class="string">"epoch"</span>,
+    save_total_limit=<span class="number">2</span>,
+    logging_steps=<span class="number">10</span>,
+    fp16=<span class="keyword">True</span>,                      <span class="comment"># 混合精度</span>
+    dataloader_num_workers=<span class="number">4</span>,
+    report_to=<span class="string">"none"</span>,
+)
+
+<span class="comment"># 6. 创建训练器</span>
+trainer = SFTTrainer(
+    model=model,
+    tokenizer=tokenizer,
+    train_dataset=dataset,
+    args=training_args,
+    max_seq_length=<span class="number">1024</span>,
+    packing=<span class="keyword">True</span>,                   <span class="comment"># 短序列打包</span>
+)
+
+<span class="comment"># 7. 开始训练</span>
+trainer.train()
+
+<span class="comment"># 8. 保存模型</span>
+trainer.save_model(f<span class="string">"{output_dir}/final"</span>)
+tokenizer.save_pretrained(f<span class="string">"{output_dir}/final"</span>)</code></pre>
+
+    <h3>4.4 评估与部署</h3>
+
+    <h4>评估指标</h4>
+
+    <table>
+        <tr>
+            <th>指标</th>
+            <th>描述</th>
+            <th>评估方法</th>
+        </tr>
+        <tr>
+            <td>Loss</td>
+            <td>训练损失</td>
+            <td>训练日志</td>
+        </tr>
+        <tr>
+            <td>BLEU/ROUGE</td>
+            <td>文本生成质量</td>
+            <td>自动评估</td>
+        </tr>
+        <tr>
+            <td>人工评估</td>
+            <td>输出质量主观评估</td>
+            <td>人工打分</td>
+        </tr>
+        <tr>
+            <td>特定任务指标</td>
+            <td>准确率、F1等</td>
+            <td>任务相关评估</td>
+        </tr>
+    </table>
+
+    <h4>部署方式</h4>
+
+    <ul>
+        <li><strong>本地部署</strong>：使用 vLLM、Text Generation Inference 等</li>
+        <li><strong>云端部署</strong>：AWS SageMaker、Azure ML、阿里云 PAI</li>
+        <li><strong>容器化</strong>：Docker + Kubernetes</li>
+        <li><strong>API 服务</strong>：FastAPI、Flask 等框架包装</li>
+    </ul>
+
+    <h2>5. 常见问题与解决方案</h2>
+
+    <h3>5.1 灾难性遗忘</h3>
+
+    <p>模型在微调后忘记了预训练学到的知识。</p>
+
+    <ul>
+        <li>使用较低的学习率（1e-5 ~ 5e-5）</li>
+        <li>混合通用数据一起训练</li>
+        <li>使用 LoRA 等参数高效方法</li>
+        <li>保存检查点，选择最优模型</li>
+    </ul>
+
+    <h3>5.2 过拟合</h3>
+
+    <p>模型在训练数据上表现好，但泛化能力差。</p>
+
+    <ul>
+        <li>增加训练数据量</li>
+        <li>使用正则化（dropout、weight decay）</li>
+        <li>减少训练轮数</li>
+        <li>使用验证集监控过拟合</li>
+    </ul>
+
+    <h3>5.3 训练不稳定</h3>
+
+    <ul>
+        <li>使用梯度累积</li>
+        <li>降低学习率</li>
+        <li>添加学习率预热（warmup）</li>
+        <li>检查数据质量</li>
+    </ul>
+
+    <h3>5.4 显存不足</h3>
+
+    <ul>
+        <li>使用量化（4bit/8bit）</li>
+        <li>使用 LoRA 微调</li>
+        <li>减小 batch size</li>
+        <li>使用梯度 checkpointing</li>
+    </ul>
+
+    <h2>6. 总结</h2>
+
+    <p>微调是定制化 LLM 的重要手段，但成本较高。建议先尝试提示词工程，只有在提示词无法满足需求时才考虑微调。LoRA 是目前最流行的参数高效微调方法，可以在消费级 GPU 上完成训练。</p>
+
+    <div class="summary-table">
+        <table>
+            <tr>
+                <th>方法</th>
+                <th>显存需求</th>
+                <th>训练时间</th>
+                <th>效果</th>
+            </tr>
+            <tr>
+                <td>全参数微调</td>
+                <td>极高（多卡）</td>
+                <td>长</td>
+                <td>最好</td>
+            </tr>
+            <tr>
+                <td>LoRA</td>
+                <td>中（单卡）</td>
+                <td>中</td>
+                <td>较好</td>
+            </tr>
+            <tr>
+                <td>QLoRA</td>
+                <td>低（消费级）</td>
+                <td>较长</td>
+                <td>较好</td>
+            </tr>
+            <tr>
+                <td>Prefix Tuning</td>
+                <td>低</td>
+                <td>短</td>
+                <td>一般</td>
+            </tr>
+        </table>
+    </div>
+
+    <hr>
+
+    <h2>参考资料</h2>
+    <ul>
+        <li><a href="https://huggingface.co/docs/transformers/en/training" target="_blank">Hugging Face Transformers 训练文档</a></li>
+        <li><a href="https://github.com/huggingface/peft" target="_blank">PEFT GitHub</a></li>
+        <li><a href="https://unsloth.ai/" target="_blank">Unsloth 官网</a></li>
+        <li><a href="https://arxiv.org/abs/2106.09685" target="_blank">LoRA 论文</a></li>
+    </ul>
+
+    <footer>
+        <p>&copy; 2024 AI DevOps 研究 | <a href="../../index.html">返回首页</a> | <a href="index.html">返回目录</a></p>
+    </footer>
+</body>
+</html>

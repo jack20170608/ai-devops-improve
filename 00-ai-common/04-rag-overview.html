@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG 技术概述</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --code-bg: #f4f4f4;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: var(--text-color);
+            background: #fff;
+        }
+
+        h1 { font-size: 2em; color: var(--primary-color); border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { font-size: 1.5em; color: var(--primary-color); margin-top: 40px; padding-left: 15px; border-left: 4px solid var(--accent-color); }
+        h3 { font-size: 1.2em; color: #555; margin-top: 25px; }
+
+        a { color: var(--accent-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .note { background: #e8f4fd; border-left: 4px solid var(--accent-color); padding: 15px 20px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+        .note strong { color: var(--accent-color); }
+
+        code { font-family: 'Fira Code', 'Consolas', monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.9em; color: #e74c3c; }
+
+        pre { background: #282c34; color: #abb2bf; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; color: #abb2bf; font-size: 0.85em; }
+
+        .comment { color: #5c6370; font-style: italic; }
+        .keyword { color: #c678dd; }
+        .function { color: #61afef; }
+        .string { color: #98c379; }
+        .number { color: #d19a66; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+        th { background: var(--bg-color); font-weight: 600; }
+        tr:nth-child(even) { background: #fafafa; }
+
+        ul, ol { margin: 15px 0; padding-left: 25px; }
+        li { margin: 8px 0; }
+
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 40px 0; }
+        blockquote { border-left: 4px solid #ddd; margin: 20px 0; padding: 10px 20px; color: #666; background: #fafafa; }
+
+        .summary-table { background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .summary-table table { margin: 0; }
+
+        footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; color: #888; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>RAG 技术概述</h1>
+
+    <div class="note">
+        <strong>前置知识：</strong> 了解 <a href="01-ai-basics.html">AI 基本概念</a> 和 <a href="02-prompt-engineering.html">提示词工程</a>，熟悉 LLM 的基本原理
+    </div>
+
+    <p>检索增强生成（Retrieval-Augmented Generation，RAG）是一种将外部知识检索与大语言模型生成相结合的技术。它能够解决 LLM 知识时效性差、幻觉严重、缺乏专业领域知识等问题，是当前构建企业级 AI 应用的核心技术之一。</p>
+
+    <h2>1. 为什么需要 RAG？</h2>
+
+    <p>虽然大语言模型能力强大，但存在固有的局限性：</p>
+
+    <h3>1.1 LLM 的局限性</h3>
+
+    <table>
+        <tr>
+            <th>问题</th>
+            <th>描述</th>
+            <th>RAG 解决方案</th>
+        </tr>
+        <tr>
+            <td>知识时效性</td>
+            <td>训练数据有截止日期，无法回答最新信息</td>
+            <td>实时检索最新数据</td>
+        </tr>
+        <tr>
+            <td>幻觉问题</td>
+            <td>模型可能生成看似合理但错误的内容</td>
+            <td>基于真实文档生成，有据可查</td>
+        </tr>
+        <tr>
+            <td>领域知识</td>
+            <td>缺乏特定行业的专业知识</td>
+            <td>注入专业文档作为知识源</td>
+        </tr>
+        <tr>
+            <td>长上下文</td>
+            <td>处理长文本成本高，有上下文限制</td>
+            <td>只检索相关内容，节省 Token</td>
+        </tr>
+        <tr>
+            <td>数据隐私</td>
+            <td>敏感数据不便用于训练</td>
+            <td>本地知识库，不训练模型</td>
+        </tr>
+        <tr>
+            <td>可解释性</td>
+            <td>难以解释回答的依据</td>
+            <td>引用来源，可追溯可验证</td>
+        </tr>
+    </table>
+
+    <h3>1.2 RAG 的核心价值</h3>
+
+    <pre><code><span class="comment"># RAG vs 纯 LLM 对比</span>
+
+<span class="comment"># 纯 LLM 回答</span>
+用户：关于公司2024年Q3的财务表现？
+LLM：抱歉，我的训练数据截止到2023年，无法提供最新信息。
+
+<span class="comment"># RAG 回答</span>
+用户：关于公司2024年Q3的财务表现？
+RAG系统：
+  1. 检索到2024年Q3财报PDF
+  2. 提取关键财务数据
+  3. 生成基于真实数据的回答
+  4. 附上数据来源
+
+回答：据2024年Q3财报显示，公司营收同比增长15%，
+    净利润达到2.3亿元。详细数据见附件财务报告。
+    📎 来源：/docs/2024-q3-report.pdf</code></pre>
+
+    <h2>2. RAG 工作原理</h2>
+
+    <h3>2.1 RAG 架构概览</h3>
+
+    <pre><code><span class="comment"># RAG 完整流程</span>
+
+用户问题 ──────────────────────────────────────────┐
+    │                                                 │
+    ▼                                                 │
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   理解问题   │ ──▶ │   检索知识   │ ──▶ │   生成回答   │
+│  (Query     │     │  (Retrieve) │     │  (Generate) │
+│   Under-    │     │             │     │             │
+│   standing) │     └─────────────┘     └─────────────┘
+└─────────────┘           │                   │
+                          ▼                   ▼
+                   ┌─────────────┐     ┌─────────────┐
+                   │  知识库      │     │  上下文增强  │
+                   │ (Knowledge  │     │ (Context    │
+                   │   Base)     │     │  Augment)   │
+                   └─────────────┘     └─────────────┘
+                                              │
+                                              ▼
+                                       ┌─────────────┐
+                                       │  带引用答案  │
+                                       │ (Grounded   │
+                                       │  Response)  │
+                                       └─────────────┘</code></pre>
+
+    <h3>2.2 核心流程详解</h3>
+
+    <h4>第一步：文档处理（Indexing）</h4>
+
+    <pre><code><span class="comment"># 文档处理流程</span>
+
+原始文档 ──▶ 文本切分 ──▶ 向量化 ──▶ 存储索引
+   │           │           │          │
+   ▼           ▼           ▼          ▼
+PDF/Word    段落/句子   Embedding  向量数据库
+  /HTML      划分        模型       (Milvus/
+                          │       Pinecone/
+                          ▼       Chroma...)
+                      向量表示</code></pre>
+
+    <h4>第二步：检索（Retrieval）</h4>
+
+    <pre><code><span class="comment"># 检索流程</span>
+
+用户问题 ──▶ 向量化 ──▶ 向量相似度搜索 ──▶ 获取Top-K相关文档
+   │           │              │                   │
+   ▼           ▼              ▼                   ▼
+"公司Q3    embedding      余弦相似度          排序后的
+ 营收？"    模型           计算               相关文档</code></pre>
+
+    <h4>第三步：增强（Augmentation）</h4>
+
+    <pre><code><span class="comment"># 上下文增强</span>
+
+系统提示词 + 检索到的知识 + 用户问题 ──▶ 组合成完整 prompt
+
+<span class="comment"># 增强后的 prompt 示例</span>
+你是一个专业的财务分析师。请根据以下参考资料回答用户问题。
+
+参考资料：
+[1] 公司2024年Q3财报 - 营收数据
+[2] 2024年Q3业绩说明会纪要
+
+用户问题：2024年Q3公司的财务表现如何？
+
+请基于上述参考资料回答，并注明来源。</code></pre>
+
+    <h4>第四步：生成（Generation）</h4>
+
+    <pre><code><span class="comment"># 生成流程</span>
+
+增强后的Prompt ──▶ LLM生成 ──▶ 带引用的回答
+      │                      │
+      ▼                      ▼
+  完整上下文            结构化输出
+                      (答案+来源)</code></pre>
+
+    <h2>3. RAG 核心技术组件</h2>
+
+    <h3>3.1 文本分割（Text Chunking）</h3>
+
+    <p>将长文档分割成适合检索的小块，是 RAG 效果的关键环节。</p>
+
+    <h4>分割策略</h4>
+
+    <table>
+        <tr>
+            <th>策略</th>
+            <th>描述</th>
+            <th>适用场景</th>
+        </tr>
+        <tr>
+            <td>固定大小</td>
+            <td>按字符数或 Token 数固定分割</td>
+            <td>通用场景，简单高效</td>
+        </tr>
+        <tr>
+            <td>按段落</td>
+            <td>按自然段落分割</td>
+            <td>结构化文档</td>
+        </tr>
+        <tr>
+            <td>递归分割</td>
+            <td>按层级结构（章节→段落→句子）递归分割</td>
+            <td>复杂文档</td>
+        </tr>
+        <tr>
+            <td>语义分割</td>
+            <td>基于语义相似度智能分割</td>
+            <td>需要保持语义完整</td>
+        </tr>
+        <tr>
+            <td>特殊分割</td>
+            <td>按代码函数、Markdown 标题等分割</td>
+            <td>技术文档</td>
+        </tr>
+    </table>
+
+    <h4>分割示例</h4>
+
+    <pre><code><span class="comment"># 固定大小分割（Python）</span>
+<span class="keyword">from</span> langchain.text_splitter <span class="keyword">import</span> CharacterTextSplitter
+
+splitter = CharacterTextSplitter(
+    chunk_size=<span class="number">500</span>,        <span class="comment"># 块大小</span>
+    chunk_overlap=<span class="number">50</span>,       <span class="comment"># 块间重叠</span>
+    separator=<span class="string">"\n"</span>          <span class="comment"># 分隔符</span>
+)
+
+chunks = splitter.split_text(long_text)
+
+<span class="comment"># 递归分割（更智能）</span>
+<span class="keyword">from</span> langchain.text_splitter <span class="keyword">import</span> RecursiveCharacterTextSplitter
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=<span class="number">500</span>,
+    chunk_overlap=<span class="number">50</span>,
+    separators=[<span class="string">"\n\n"</span>, <span class="string">"\n"</span>, <span class="string">"。"</span>, <span class="string">" "</span>, <span class="string">""</span>]
+)
+chunks = splitter.split_text(long_text)</code></pre>
+
+    <h3>3.2 向量化（Embedding）</h3>
+
+    <p>将文本转换为向量表示，是语义检索的基础。</p>
+
+    <h4>常用 Embedding 模型</h4>
+
+    <table>
+        <tr>
+            <th>模型</th>
+            <th>特点</th>
+            <th>维度</th>
+            <th>适用场景</th>
+        </tr>
+        <tr>
+            <td>text-embedding-ada-002</td>
+            <td>OpenAI 出品，效果好</td>
+            <td>1536</td>
+            <td>通用场景</td>
+        </tr>
+        <tr>
+            <td>text-embedding-3-small</td>
+            <td>性价比高，速度快</td>
+            <td>1536</td>
+            <td>大规模应用</td>
+        </tr>
+        <tr>
+            <td>text-embedding-3-large</td>
+            <td>效果最佳</td>
+            <td>3072</td>
+            <td>高精度需求</td>
+        </tr>
+        <tr>
+            <td>text-multilingual-...</td>
+            <td>多语言支持</td>
+            <td>768/1536</td>
+            <td>多语言场景</td>
+        </tr>
+        <tr>
+            <td>BGE 系列</td>
+            <td>开源，中文效果好</td>
+            <td>1024</td>
+            <td>本地部署</td>
+        </tr>
+    </table>
+
+    <h4>Embedding 示例</h4>
+
+    <pre><code><span class="comment"># 使用 OpenAI Embedding</span>
+<span class="keyword">from</span> openai <span class="keyword">import</span> OpenAI
+
+client = OpenAI()
+
+<span class="comment"># 获取文本向量</span>
+response = client.embeddings.create(
+    model=<span class="string">"text-embedding-3-small"</span>,
+    input=<span class="string">"RAG 是检索增强生成技术"</span>
+)
+
+embedding = response.data[<span class="number">0</span>].embedding
+<span class="keyword">print</span>(<span class="string">f"向量维度: {len(embedding)}"</span>)  <span class="comment"># 1536</span></code></pre>
+
+    <h3>3.3 向量数据库（Vector Database）</h3>
+
+    <p>存储和检索向量数据的 specialized 数据库。</p>
+
+    <h4>主流向量数据库对比</h4>
+
+    <table>
+        <tr>
+            <th>数据库</th>
+            <th>特点</th>
+            <th>适用场景</th>
+            <th>部署方式</th>
+        </tr>
+        <tr>
+            <td>Pinecone</td>
+            <td>托管服务，易用性强</td>
+            <td>快速上线，无需运维</td>
+            <td>云服务</td>
+        </tr>
+        <tr>
+            <td>Weaviate</td>
+            <td>开源，功能丰富</td>
+            <td>需要本地部署</td>
+            <td>开源/云</td>
+        </tr>
+        <tr>
+            <td>Milvus</td>
+            <td>高性能，大规模</td>
+            <td>海量数据场景</td>
+            <td>开源/云</td>
+        </tr>
+        <tr>
+            <td>Chroma</td>
+            <td>轻量级，易集成</td>
+            <td>原型开发</td>
+            <td>开源/本地</td>
+        </tr>
+        <tr>
+            <td>Qdrant</td>
+            <td>Rust 实现，性能高</td>
+            <td>生产级应用</td>
+            <td>开源/云</td>
+        </tr>
+        <tr>
+            <td>Faiss</td>
+            <td>Facebook 出品，算法丰富</td>
+            <td>离线分析</td>
+            <td>开源/本地</td>
+        </tr>
+    </table>
+
+    <h4>向量检索示例</h4>
+
+    <pre><code><span class="comment"># 使用 Chroma 进行向量检索</span>
+<span class="keyword">from</span> langchain.vectorstores <span class="keyword">import</span> Chroma
+<span class="keyword">from</span> langchain.embeddings <span class="keyword">import</span> OpenAIEmbeddings
+
+<span class="comment"># 创建向量存储</span>
+vectorstore = Chroma.from_documents(
+    documents=chunks,
+    embedding=OpenAIEmbeddings()
+)
+
+<span class="comment"># 相似度检索</span>
+results = vectorstore.similarity_search(
+    query=<span class="string">"公司Q3营收如何？"</span>,
+    k=<span class="number">3</span>  <span class="comment"># 返回Top-3相关文档</span>
+)
+
+<span class="keyword">for</span> i, doc <span class="keyword">in</span> enumerate(results):
+    <span class="keyword">print</span>(<span class="string">f"【文档{i+1}】{doc.page_content[:100]}..."</span>)</code></pre>
+
+    <h3>3.4 检索策略</h3>
+
+    <h4>基础检索</h4>
+
+    <ul>
+        <li><strong>相似度检索</strong>：基于向量相似度（余弦相似度、点积等）</li>
+        <li><strong>关键词检索</strong>：BM25、TF-IDF 等传统方法</li>
+        <li><strong>混合检索</strong>：结合向量检索和关键词检索</li>
+    </ul>
+
+    <h4>高级检索策略</h4>
+
+    <table>
+        <tr>
+            <th>策略</th>
+            <th>描述</th>
+            <th>效果</th>
+        </tr>
+        <tr>
+            <td>HyDE</td>
+            <td>让 LLM 生成假设性回答，再用于检索</td>
+            <td>提升召回率</td>
+        </tr>
+        <tr>
+            <td>Multi-Query</td>
+            <td>用 LLM 生成多个检索查询</td>
+            <td>覆盖不同表达方式</td>
+        </tr>
+        <tr>
+            <td>Parent Document</td>
+            <td>检索小块但返回大块上下文</td>
+            <td>平衡相关性和完整性</td>
+        </tr>
+        <tr>
+            <td>Contextual Compression</td>
+            <td>压缩检索到的内容，保留关键信息</td>
+            <td>减少噪声，提高质量</td>
+        </tr>
+        <tr>
+            <td>Ensemble</td>
+            <td>融合多个检索器的结果</td>
+            <td>提升稳定性</td>
+        </tr>
+    </table>
+
+    <h2>4. RAG 完整实现示例</h2>
+
+    <h3>4.1 使用 LangChain 实现 RAG</h3>
+
+    <pre><code><span class="comment"># 完整 RAG 实现（LangChain）</span>
+<span class="keyword">from</span> langchain.document_loaders <span class="keyword">import</span> PyPDFLoader
+<span class="keyword">from</span> langchain.text_splitter <span class="keyword">import</span> RecursiveCharacterTextSplitter
+<span class="keyword">from</span> langchain.vectorstores <span class="keyword">import</span> Chroma
+<span class="keyword">from</span> langchain.embeddings <span class="keyword">import</span> OpenAIEmbeddings
+<span class="keyword">from</span> langchain.chat_models <span class="keyword">import</span> ChatOpenAI
+<span class="keyword">from</span> langchain.chains <span class="keyword">import</span> RetrievalQA
+<span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> PromptTemplate
+
+<span class="comment"># 1. 加载文档</span>
+loader = PyPDFLoader(<span class="string">"docs/2024-q3-report.pdf"</span>)
+documents = loader.load()
+
+<span class="comment"># 2. 文本分割</span>
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=<span class="number">500</span>,
+    chunk_overlap=<span class="number">50</span>
+)
+chunks = splitter.split_documents(documents)
+
+<span class="comment"># 3. 向量化并存储</span>
+embeddings = OpenAIEmbeddings()
+vectorstore = Chroma.from_documents(
+    documents=chunks,
+    embedding=embeddings
+)
+
+<span class="comment"># 4. 创建检索器</span>
+retriever = vectorstore.as_retriever(
+    search_type=<span class="string">"similarity"</span>,
+    search_kwargs={<span class="string">"k"</span>: <span class="number">3</span>}
+)
+
+<span class="comment"># 5. 定义提示词</span>
+prompt = PromptTemplate(
+    template=<span class="string">"""你是一个专业的财务分析师。
+请根据以下参考资料回答用户问题。
+
+参考资料：
+{context}
+
+用户问题：{question}
+
+请基于上述参考资料回答，并注明来源。"""</span>,
+    input_variables=[<span class="string">"context"</span>, <span class="string">"question"</span>]
+)
+
+<span class="comment"># 6. 创建 QA 链</span>
+llm = ChatOpenAI(model=<span class="string">"gpt-4"</span>)
+qa_chain = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type=<span class="string">"stuff"</span>,
+    retriever=retriever,
+    chain_type_kwargs={<span class="string">"prompt"</span>: prompt}
+)
+
+<span class="comment"># 7. 问答</span>
+question = <span class="string">"2024年Q3公司的财务表现如何？"</span>
+answer = qa_chain.run(question)
+<span class="keyword">print</span>(answer)</code></pre>
+
+    <h3>4.2 使用 LlamaIndex 实现 RAG</h3>
+
+    <pre><code><span class="comment"># 使用 LlamaIndex 实现 RAG</span>
+<span class="keyword">from</span> llama_index <span class="keyword">import</span> VectorStoreIndex
+<span class="keyword">from</span> llama_index.readers <span class="keyword">import</span> PDFReader
+<span class="keyword">from</span> llama_index.llms <span class="keyword">import</span> OpenAI
+
+<span class="comment"># 1. 加载文档</span>
+reader = PDFReader()
+documents = reader.load_data(<span class="string">"docs/2024-q3-report.pdf"</span>)
+
+<span class="comment"># 2. 创建索引</span>
+index = VectorStoreIndex.from_documents(documents)
+
+<span class="comment"># 3. 创建查询引擎</span>
+query_engine = index.as_query_engine(
+    llm=OpenAI(model=<span class="string">"gpt-4"</span>),
+    similarity_top_k=<span class="number">3</span>
+)
+
+<span class="comment"># 4. 问答</span>
+response = query_engine.query(<span class="string">"2024年Q3公司的财务表现如何？"</span>)
+<span class="keyword">print</span>(response)</code></pre>
+
+    <h2>5. RAG 优化策略</h2>
+
+    <h3>5.1 检索优化</h3>
+
+    <h4>数据质量优化</h4>
+
+    <ul>
+        <li><strong>清洗数据</strong>：去除噪音、重复、无关内容</li>
+        <li><strong>优化分块</strong>：根据内容类型选择合适的分块策略</li>
+        <li><strong>添加元数据</strong>：为文档添加标题、来源、时间等元数据</li>
+        <li><strong>结构化</strong>：使用 Markdown、标题层级等结构化文档</li>
+    </ul>
+
+    <h4>检索效果优化</h4>
+
+    <ul>
+        <li><strong>混合检索</strong>：结合向量检索和关键词检索</li>
+        <li><strong>重排序</strong>：使用 Cross-Encoder 对结果重排序</li>
+        <li><strong>查询扩展</strong>：用 LLM 生成相关查询</li>
+        <li><strong>自适应检索</strong>：根据问题类型选择不同策略</li>
+    </ul>
+
+    <h3>5.2 生成优化</h3>
+
+    <h4>提示词优化</h4>
+
+    <pre><code><span class="comment"># 优化后的提示词</span>
+prompt = <span class="string">"""你是一个专业的助手。请根据以下参考资料回答用户问题。
+
+要求：
+1. 只使用参考资料中的信息，不要添加额外知识
+2. 如果参考资料中没有相关信息，请明确说明
+3. 回答要引用具体的来源
+
+参考资料：
+{context}
+
+用户问题：{question}
+
+回答格式：
+- 答案：[你的回答]
+- 来源：[引用的文档]"""</span></code></pre>
+
+    <h4>控制幻觉</h4>
+
+    <ul>
+        <li><strong>来源标注</strong>：在回答中标注信息来源</li>
+        <li><strong>事实核查</strong>：让 LLM 核查生成内容是否与参考一致</li>
+        <li><strong>置信度</strong>：对不确定的内容标记置信度</li>
+        <li><strong>追问确认</strong>：对关键事实进行追问确认</li>
+    </ul>
+
+    <h2>6. RAG 评估与监控</h2>
+
+    <h3>6.1 评估指标</h3>
+
+    <table>
+        <tr>
+            <th>指标</th>
+            <th>描述</th>
+            <th>评估方法</th>
+        </tr>
+        <tr>
+            <td>召回率（Recall）</td>
+            <td>相关文档被检索到的比例</td>
+            <td>人工标注/自动评估</td>
+        </tr>
+        <tr>
+            <td>精确率（Precision）</td>
+            <td>检索到的文档中相关的比例</td>
+            <td>人工标注/自动评估</td>
+        </tr>
+        <tr>
+            <td>答案准确率</td>
+            <td>生成的答案是否正确</td>
+            <td>人工评估/LLM 评估</td>
+        </tr>
+        <tr>
+            <td>引用准确率</td>
+            <td>引用来源是否正确</td>
+            <td>人工评估</td>
+        </tr>
+        <tr>
+            <td>响应时间</td>
+            <td>系统响应速度</td>
+            <td>性能监控</td>
+        </tr>
+    </table>
+
+    <h3>6.2 评估工具</h3>
+
+    <ul>
+        <li><strong>RAGAs</strong>：专门评估 RAG 系统的指标框架</li>
+        <li><strong>LangSmith</strong>：LangChain 的评估和监控平台</li>
+        <li><strong>DeepEval</strong>：开源的 LLM 评估框架</li>
+        <li><strong>Trulens</strong>：RAG 评估的开源工具</li>
+    </ul>
+
+    <h2>7. RAG 的局限性与未来</h2>
+
+    <h3>7.1 当前局限性</h3>
+
+    <ul>
+        <li><strong>检索质量依赖</strong>：检索效果直接决定生成质量</li>
+        <li><strong>复杂推理</strong>：难以处理需要多步推理的问题</li>
+        <li><strong>长上下文</strong>：处理超长文档仍有挑战</li>
+        <li><strong>延迟</strong>：检索增加了响应时间</li>
+        <li><strong>成本</strong>：向量存储和检索有额外成本</li>
+    </ul>
+
+    <h3>7.2 未来发展趋势</h3>
+
+    <ul>
+        <li><strong>原生 RAG</strong>：模型原生支持检索能力</li>
+        <li><strong>Graph RAG</strong>：结合知识图谱，增强关系理解</li>
+        <li><strong>Agentic RAG</strong>：结合 Agent 能力，自主规划检索</li>
+        <li><strong>多模态 RAG</strong>：支持图像、视频等非文本内容</li>
+        <li><strong>实时 RAG</strong>：动态更新知识库，实时检索</li>
+    </ul>
+
+    <h2>8. 总结</h2>
+
+    <p>RAG 是构建企业级 AI 应用的核心技术，它通过将外部知识检索与大语言模型生成相结合，有效解决了 LLM 的知识时效性、幻觉、领域知识缺乏等问题。</p>
+
+    <div class="summary-table">
+        <table>
+            <tr>
+                <th>组件</th>
+                <th>功能</th>
+                <th>关键技术</th>
+            </tr>
+            <tr>
+                <td>文档处理</td>
+                <td>加载和分割文档</td>
+                <td>PDFLoader, 文本分割器</td>
+            </tr>
+            <tr>
+                <td>向量化</td>
+                <td>将文本转为向量</td>
+                <td>Embedding 模型</td>
+            </tr>
+            <tr>
+                <td>向量存储</td>
+                <td>存储和检索向量</td>
+                <td>Pinecone, Chroma, Milvus</td>
+            </tr>
+            <tr>
+                <td>检索</td>
+                <td>找到相关文档</td>
+                <td>相似度搜索, BM25, 混合检索</td>
+            </tr>
+            <tr>
+                <td>生成</td>
+                <td>生成最终回答</td>
+                <td>LLM + 提示词</td>
+            </tr>
+        </table>
+    </div>
+
+    <hr>
+
+    <h2>参考资料</h2>
+    <ul>
+        <li><a href="https://python.langchain.com/docs/modules/data_connection/" target="_blank">LangChain RAG 文档</a></li>
+        <li><a href="https://docs.llamaindex.ai/en/latest/index.html" target="_blank">LlamaIndex 文档</a></li>
+        <li><a href="https://arxiv.org/abs/2005.11401" target="_blank">RAG 原始论文</a></li>
+        <li><a href="https://www.ragas.io/" target="_blank">RAGAs 评估框架</a></li>
+        <li><a href="https://python.langchain.com/docs/langchain" target="_blank">LangChain 官方文档</a></li>
+    </ul>
+
+    <footer>
+        <p>&copy; 2024 AI DevOps 研究 | <a href="../../index.html">返回首页</a> | <a href="index.html">返回目录</a></p>
+    </footer>
+</body>
+</html>
