@@ -12,6 +12,7 @@
 - [技术栈](#技术栈)
 - [项目结构](#项目结构)
 - [快速开始](#快速开始)
+- [企业级 DevOps 规范](#企业级-devops-规范)
 - [研究成果](#研究成果)
 - [贡献指南](#贡献指南)
 - [许可证](#许可证)
@@ -82,6 +83,12 @@ ai-devops-improve/
 │   ├── 04-rag-overview.md
 │   ├── 05-fine-tuning.md
 │   └── 06-ai-software-development-concepts.md
+├── 10-Devops-SOP/           # 企业级软件 DevOps 规范与标准
+│   ├── README.md
+│   ├── 01-ai-assisted-project-structure.md
+│   ├── 02-java-coding-standard.md
+│   ├── 03-secure-coding-standard.md
+│   └── 04-http-api-design-standard.md
 ├── README.md               # 项目说明
 └── LICENSE                 # 许可证（规划中）
 ```
@@ -90,11 +97,20 @@ ai-devops-improve/
 
 ### 1. 查看学习路径
 
-从 [AI 基础学习路径](00-AI-common/README.md) 开始，文档按建议顺序排列，无需安装依赖。
+从 [AI 基础学习路径](./00-ai-common/README.md) 开始，文档按建议顺序排列，无需安装依赖。
 
 ### 2. AI 软件开发基础研究
 
-如果已经了解 LLM 基础，可直接阅读 [AI 软件开发核心概念与 DevOps 实践](00-AI-common/06-ai-software-development-concepts.md)，其中包含 Prompt、斜杠命令、SOP、MCP、Skill、Agent 的关系图、实际案例、安全护栏和评估指标。
+如果已经了解 LLM 基础，可直接阅读 [AI 软件开发核心概念与 DevOps 实践](./00-ai-common/06-ai-software-development-concepts.md)，其中包含 Prompt、斜杠命令、SOP、MCP、Skill、Agent 的关系图、实际案例、安全护栏和评估指标。
+
+## 企业级 DevOps 规范
+
+[企业级软件 DevOps 规范与标准](./10-Devops-SOP/README.md) 提供可直接采用或裁剪的治理基线：
+
+- [AI 辅助开发项目结构规范](./10-Devops-SOP/01-ai-assisted-project-structure.md)
+- [Java 编码规范](./10-Devops-SOP/02-java-coding-standard.md)
+- [代码安全规范](./10-Devops-SOP/03-secure-coding-standard.md)
+- [HTTP API 设计规范](./10-Devops-SOP/04-http-api-design-standard.md)
 
 ## 研究成果
 
@@ -104,6 +120,7 @@ ai-devops-improve/
 - [x] 提示词工程基础
 - [x] LLM Agent 基础
 - [x] AI 软件开发核心概念与 DevOps 实践
+- [x] 企业级 AI 辅助开发、Java、安全与 HTTP API 规范
 
 ### 进行中
 
