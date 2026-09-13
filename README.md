@@ -111,6 +111,7 @@ ai-devops-improve/
 - [Java 编码规范](./10-Devops-SOP/02-java-coding-standard.md)
 - [代码安全规范](./10-Devops-SOP/03-secure-coding-standard.md)
 - [HTTP API 设计规范](./10-Devops-SOP/04-http-api-design-standard.md)
+- [Copilot 路径级开发标准](./.github/instructions/)
 
 ## 研究成果
 

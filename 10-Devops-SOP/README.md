@@ -15,6 +15,18 @@
 | [03. 代码安全规范](./03-secure-coding-standard.md) | 凭据、输入、认证授权、SSRF、加密、日志、供应链、GitHub 与 AI 安全 |
 | [04. HTTP API 设计规范](./04-http-api-design-standard.md) | HTTP 语义、状态码、URI、错误模型、OpenAPI、幂等、缓存、分页、版本与追踪 |
 
+Copilot 可直接加载的精简执行版本位于 `../.github/instructions/`：
+
+| Instruction | 自动应用范围 |
+|-------------|--------------|
+| `java.instructions.md` | Java 源码和测试 |
+| `http-api.instructions.md` | Controller、Resource、Endpoint 和 OpenAPI |
+| `config-security.instructions.md` | Properties、YAML、JSON、环境、容器和 IaC 配置 |
+| `workflows.instructions.md` | GitHub Actions workflow |
+| `build-dependencies.instructions.md` | Maven、Gradle、Wrapper 和依赖配置 |
+
+这些文件通过 `applyTo` 按当前改动路径自动加载，包含正反案例与完成检查清单。
+
 ## 2. 规范用语
 
 | 用语 | 含义 |
@@ -141,4 +153,3 @@ trackingIssue: SEC-1842
 - [RFC 9110: HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110.html)
 - [RFC 9457: Problem Details for HTTP APIs](https://www.rfc-editor.org/rfc/rfc9457.html)
 - [OpenAPI 3.1.1](https://spec.openapis.org/oas/v3.1.1.html)
-

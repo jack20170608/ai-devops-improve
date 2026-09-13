@@ -16,6 +16,7 @@ If code is added later, prefer to adopt the tooling that matches the new project
 - `README.md` is the canonical overview and the repository's main source of project direction.
 - `00-ai-common/` contains foundational AI and AI-assisted development research.
 - `10-Devops-SOP/` contains the enterprise DevOps standards for AI-assisted project structure, Java, security, and HTTP APIs.
+- `.github/instructions/` contains focused Copilot-readable standards for Java, HTTP APIs, configuration security, GitHub Actions, and build dependencies.
 - The repo is intentionally lightweight: research notes and prose live at the top level rather than in an application module layout.
 - Local editor and session metadata such as `.idea/` and `.remember/` are environment-specific. They are not source-of-truth project structure.
 - This repo does not currently have an app/service architecture, package boundaries, or deployment flow to navigate.
